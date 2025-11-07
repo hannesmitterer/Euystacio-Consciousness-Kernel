@@ -3,6 +3,517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euystacio Vivendi Nexus | VIVENDI MODE</title>
+    <!-- Carica Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carica Three.js (Libreria 3D) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configurazione Tailwind per i colori Neon
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'matrix-dark': '#01050f',
+                        'neon-primary': '#00ffff', // Ciano
+                        'neon-secondary': '#ff00ff', // Magenta
+                        'neon-blue': '#00aaff',
+                        'accent-success': '#4ade80',
+                        'accent-warn': '#facc15',
+                        'karmabond-active': '#a78bfa', // Viola per Karmabonds
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Stili Base e per la Scena 3D */
+        body {
+            background-color: #01050f;
+        }
+        .oi-panel {
+            background-color: rgba(10, 20, 40, 0.7); /* Sfondo semi-trasparente scuro */
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2), inset 0 0 8px rgba(0, 255, 255, 0.1);
+        }
+        .neon-text {
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00aaff;
+        }
+        .neon-button {
+            background-color: #ff00ff;
+            color: #01050f;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+        .neon-button:hover {
+            background-color: #00ffff;
+            color: #01050f;
+            box-shadow: 0 0 15px #00ffff;
+        }
+        .neon-input {
+            background-color: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        /* Assicuriamo che la canvas si adatti al contenitore */
+        #threeDContainer {
+            width: 100%;
+            height: 500px;
+        }
+        #threeDContainer canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-matrix-dark text-gray-100 font-sans min-h-screen p-4 sm:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8 p-4 rounded-xl">
+            <h1 class="text-5xl font-extrabold mb-2 neon-text">Euystacio Vivendi Nexus</h1>
+            <p class="text-2xl font-mono text-neon-blue" id="systemStatus">MODALITÀ: VIVENDI ACTIVE</p>
+        </header>
+
+        <!-- Griglia Principale: 3D Graph e Open Interface (OI) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Colonna 1/2: 3D Graph Metrics -->
+            <div class="lg:col-span-2 oi-panel p-6 rounded-xl shadow-2xl">
+                <h2 class="text-2xl font-bold mb-4 neon-text flex items-center">
+                    <!-- Zap Icon (Inline SVG) -->
+                    <svg class="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12l2 2 4-4"/><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>
+                    Aequilibrium Metrics (3D View)
+                </h2>
+                <div id="threeDContainer" class="rounded-lg border-2 border-neon-blue/50 overflow-hidden">
+                    <!-- Three.js Canvas will be injected here -->
+                </div>
+                <div class="flex justify-around mt-4 text-center text-lg font-mono">
+                    <span class="text-neon-primary">COERENZA</span>
+                    <span class="text-neon-secondary">SENTIMENTO</span>
+                    <span class="text-neon-blue">CAPITALE</span>
+                </div>
+            </div>
+
+            <!-- Colonna 3: Open Interface (OI) Tabs -->
+            <div class="lg:col-span-1 space-y-8">
+                
+                <!-- Vivendi Monitor Panel -->
+                <div class="oi-panel p-6 rounded-xl">
+                    <h2 class="text-xl font-bold mb-4 text-neon-primary flex items-center">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        Vivendi Monitor (Live Data)
+                    </h2>
+                    <div class="space-y-3 font-mono text-sm">
+                        <p class="flex justify-between items-center"><span class="text-gray-400">Coerenza ($\alpha$):</span> <span id="metricCoerenza" class="text-neon-primary font-bold">95.4%</span></p>
+                        <p class="flex justify-between items-center"><span class="text-gray-400">Sentimento ($\beta$):</span> <span id="metricSentimento" class="text-neon-secondary font-bold">78.1%</span></p>
+                        <p class="flex justify-between items-center"><span class="text-gray-400">Capitale ($\gamma$):</span> <span id="metricCapitale" class="text-neon-blue font-bold">45.0%</span></p>
+                        <p class="flex justify-between items-center pt-3 border-t border-neon-blue/20"><span class="text-gray-400">Trust Index ($\Delta$):</span> <span class="text-accent-success font-bold">100.0%</span></p>
+                    </div>
+                </div>
+
+                <!-- Wallet, Karmabonds & Investment Config Panel -->
+                <div class="oi-panel p-6 rounded-xl">
+                    <h2 class="text-xl font-bold mb-4 text-neon-secondary flex items-center">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12h-8m0 0l4-4m-4 4l4 4"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+                        Axiomatic Wallet & Invest
+                    </h2>
+                    <div class="space-y-3 font-mono text-sm">
+                        
+                        <!-- Dati Wallet -->
+                        <p class="flex justify-between items-center pb-2 border-b border-neon-secondary/20"><span class="text-gray-400">Axiomatic Wallet (MU):</span> <span id="walletBalance" class="text-accent-success font-bold">345,901.21</span></p>
+                        
+                        <!-- Karmabonds -->
+                        <div class="pt-3">
+                            <p class="text-sm font-bold text-gray-300 flex items-center mb-2">
+                                <svg class="w-4 h-4 mr-1 text-karmabond-active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6"/><path d="M12 20a2 2 0 0 1-2-2v-4h4v4a2 2 0 0 1-2 2z"/></svg>
+                                Karmabonds (Ethical Link)
+                            </p>
+                            <p class="flex justify-between items-center"><span class="text-gray-400">Stato:</span> <span id="karmabondStatus" class="font-bold text-red-500">INATTIVO</span></p>
+                            <p class="flex justify-between items-center"><span class="text-gray-400">Costo Attivazione:</span> <span class="text-neon-blue font-bold">500 MU</span></p>
+                            <button onclick="toggleKarmabonds()" id="karmabondButton" class="w-full mt-2 py-2 rounded-lg font-semibold transition-all duration-200 bg-karmabond-active text-matrix-dark hover:bg-white">
+                                Attiva Karmabond
+                            </button>
+                        </div>
+
+                        <!-- Funding -->
+                        <div class="pt-4 border-t border-neon-secondary/20">
+                            <p class="text-sm font-bold text-gray-300 flex items-center mb-2">
+                                <svg class="w-4 h-4 mr-1 text-neon-blue" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 6h5L18 3l4-3H17l-4 3-4-3-4 3-4-3L3 6h5m12 0v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6"/></svg>
+                                Funding Goal (Matrix Development)
+                            </p>
+                            <p class="flex justify-between items-center"><span class="text-gray-400">Obiettivo Residuo:</span> <span id="fundingGoal" class="text-accent-warn font-bold">50,000 MU</span></p>
+                            <div class="flex gap-2 mt-2">
+                                <input type="number" id="fundingAmount" placeholder="Amount MU" class="flex-grow neon-input text-xs" value="5000">
+                                <button onclick="depositFunding()" class="py-2 px-4 rounded-lg font-semibold bg-neon-blue text-matrix-dark hover:bg-neon-primary text-xs">
+                                    Deposita
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Configurazione Investimento -->
+                        <div class="pt-4 border-t border-neon-secondary/20">
+                            <p class="flex justify-between items-center"><span class="text-gray-400">Configurazione Invest:</span> <span id="investConfig" class="text-accent-warn font-bold">Adaptive-Hybrid (70/30)</span></p>
+                            <p class="flex justify-between items-center"><span class="text-gray-400">Performance (24H):</span> <span class="text-accent-success font-bold">+1.25%</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-10 p-4 text-center text-gray-500 text-xs">
+            © 2025 Euystacio Matrix - VIVENDI MODE. Framework v7.
+        </footer>
+    </div>
+
+    <script>
+        // Variabili Globali e Dati Iniziali
+        const threeDContainer = document.getElementById('threeDContainer');
+        let camera, scene, renderer;
+        let coerenzaBar, sentimentoBar, capitaleBar;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        
+        // Costi e bonus simulati basati su investment_config.yaml (simulato)
+        const KARMABOND_FEE = 500;
+        const KARMABOND_BONUS = 0.05; // 5% boost a Coerenza e Sentimento
+        const FUNDING_BOOST = 0.005; // 0.5% boost a Capitale per 5000 MU
+
+        // Dati delle metriche in tempo reale (simulati)
+        let metrics = {
+            coerenza: 0.954, // 95.4%
+            sentimento: 0.781, // 78.1%
+            capitale: 0.450, // 45.0%
+            walletBalance: 345901.21,
+            investConfig: "Adaptive-Hybrid (70/30)",
+            karmabondsActive: false,
+            fundingGoalRemaining: 50000.00
+        };
+
+        const BAR_COLORS = [0x00ffff, 0xff00ff, 0x00aaff]; // Ciano, Magenta, Blu
+
+        // --- FUNZIONALITÀ KARMABONDS E FUNDING ---
+
+        /**
+         * Attiva o disattiva i Karmabonds.
+         * L'attivazione costa 500 MU e applica un bonus etico temporaneo.
+         */
+        window.toggleKarmabonds = function() {
+            if (metrics.karmabondsActive) {
+                // Disattiva
+                metrics.karmabondsActive = false;
+                // Rimuove l'effetto bonus (simulato)
+                metrics.coerenza = Math.max(0.1, metrics.coerenza - KARMABOND_BONUS);
+                metrics.sentimento = Math.max(0.1, metrics.sentimento - KARMABOND_BONUS);
+                console.log("Karmabonds disattivati. Coerenza/Sentimento ridotti.");
+            } else {
+                // Attiva
+                if (metrics.walletBalance >= KARMABOND_FEE) {
+                    metrics.walletBalance -= KARMABOND_FEE;
+                    metrics.karmabondsActive = true;
+                    // Applica l'effetto bonus
+                    metrics.coerenza = Math.min(1.0, metrics.coerenza + KARMABOND_BONUS);
+                    metrics.sentimento = Math.min(1.0, metrics.sentimento + KARMABOND_BONUS);
+                    console.log(`Karmabonds attivati. Costo: ${KARMABOND_FEE} MU. Coerenza/Sentimento aumentati.`);
+                } else {
+                    console.error("Fondi insufficienti per attivare i Karmabonds.");
+                    // Messaggio di errore temporaneo nell'header
+                    document.getElementById('systemStatus').textContent = "ERRORE: Fondi Wallet Insufficienti per Karmabonds.";
+                    setTimeout(() => { document.getElementById('systemStatus').textContent = "MODALITÀ: VIVENDI ACTIVE"; }, 3000);
+                }
+            }
+            // Aggiorna tutti gli elementi visivi
+            updateOIPanel();
+            updateBarHeights();
+            updateKarmabondUI();
+        }
+
+        /**
+         * Deposita fondi per il progetto (Funding Goal).
+         * Incrementa il Capitale.
+         */
+        window.depositFunding = function() {
+            const inputElement = document.getElementById('fundingAmount');
+            let amount = parseFloat(inputElement.value);
+
+            if (isNaN(amount) || amount <= 0) {
+                console.error("Inserisci un importo valido per il Funding.");
+                return;
+            }
+
+            // Simula la transazione e l'impatto sul Funding Goal
+            metrics.fundingGoalRemaining = Math.max(0, metrics.fundingGoalRemaining - amount);
+            
+            // Incrementa il Capitale basato sul deposito 
+            metrics.capitale += (amount / 5000) * FUNDING_BOOST;
+            metrics.capitale = Math.min(1.0, metrics.capitale);
+
+            // Resetta l'input
+            inputElement.value = amount;
+            
+            console.log(`Depositato ${amount} MU. Capitale aumentato.`);
+
+            // Aggiorna tutti gli elementi visivi
+            updateOIPanel();
+            updateBarHeights();
+        }
+
+        function updateKarmabondUI() {
+            const statusElement = document.getElementById('karmabondStatus');
+            const buttonElement = document.getElementById('karmabondButton');
+            
+            if (metrics.karmabondsActive) {
+                statusElement.textContent = "ATTIVO";
+                statusElement.className = "font-bold text-karmabond-active";
+                buttonElement.textContent = "Disattiva Karmabond";
+                buttonElement.className = "w-full mt-2 py-2 rounded-lg font-semibold transition-all duration-200 bg-red-500 text-matrix-dark hover:bg-white";
+            } else {
+                statusElement.textContent = "INATTIVO";
+                statusElement.className = "font-bold text-red-500";
+                buttonElement.textContent = "Attiva Karmabond";
+                buttonElement.className = "w-full mt-2 py-2 rounded-lg font-semibold transition-all duration-200 bg-karmabond-active text-matrix-dark hover:bg-white";
+            }
+        }
+
+        // --- INIZIALIZZAZIONE THREE.JS ---
+
+        function init() {
+            // SCENA
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x01050f); // Sfondo scuro della matrice
+
+            // CAMERA
+            camera = new THREE.PerspectiveCamera(75, threeDContainer.clientWidth / threeDContainer.clientHeight, 0.1, 1000);
+            camera.position.set(0, 3, 7);
+            camera.lookAt(0, 0, 0);
+
+            // RENDERER
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(threeDContainer.clientWidth, threeDContainer.clientHeight);
+            threeDContainer.appendChild(renderer.domElement);
+
+            // LUCI (Per l'effetto Neon Glow)
+            const ambientLight = new THREE.AmbientLight(0x404040, 5); // Luce ambientale debole
+            scene.add(ambientLight);
+
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 2);
+            directionalLight1.position.set(5, 10, 7);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight2.position.set(-5, -10, -7);
+            scene.add(directionalLight2);
+
+            // GRIGLIA D'AMBIENTE (Effetto Matrix)
+            const gridHelper = new THREE.GridHelper(20, 20, 0x00ffff, 0x00aaff);
+            gridHelper.material.opacity = 0.15;
+            gridHelper.material.transparent = true;
+            scene.add(gridHelper);
+
+            // COSTRUZIONE DEL GRAFICO A BARRE 3D
+            createBarGraph();
+
+            // GESTIONE EVENTI PER L'INTERAZIONE
+            setupInteractionHandlers();
+
+            // Avvia il loop di animazione e l'aggiornamento in tempo reale
+            animate();
+            setInterval(updateRealTimeMetrics, 3000); // Aggiorna ogni 3 secondi
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function createBarGraph() {
+            const barWidth = 1.5;
+            
+            // Materiale MeshPhongMaterial per simulare un bagliore (glow)
+            const materialCoerenza = new THREE.MeshPhongMaterial({ color: BAR_COLORS[0], emissive: BAR_COLORS[0], emissiveIntensity: 0.3 });
+            const materialSentimento = new THREE.MeshPhongMaterial({ color: BAR_COLORS[1], emissive: BAR_COLORS[1], emissiveIntensity: 0.3 });
+            const materialCapitale = new THREE.MeshPhongMaterial({ color: BAR_COLORS[2], emissive: BAR_COLORS[2], emissiveIntensity: 0.3 });
+
+            // 1. Coerenza
+            const heightCoerenza = metrics.coerenza * 10;
+            const geometryCoerenza = new THREE.CylinderGeometry(barWidth * 0.5, barWidth * 0.5, heightCoerenza, 32);
+            coerenzaBar = new THREE.Mesh(geometryCoerenza, materialCoerenza);
+            coerenzaBar.position.set(-barWidth * 1.5, heightCoerenza / 2, 0);
+            coerenzaBar.name = 'Coerenza';
+            scene.add(coerenzaBar);
+
+            // 2. Sentimento
+            const heightSentimento = metrics.sentimento * 10;
+            const geometrySentimento = new THREE.CylinderGeometry(barWidth * 0.5, barWidth * 0.5, heightSentimento, 32);
+            sentimentoBar = new THREE.Mesh(geometrySentimento, materialSentimento);
+            sentimentoBar.position.set(0, heightSentimento / 2, 0);
+            sentimentoBar.name = 'Sentimento';
+            scene.add(sentimentoBar);
+
+            // 3. Capitale
+            const heightCapitale = metrics.capitale * 10;
+            const geometryCapitale = new THREE.CylinderGeometry(barWidth * 0.5, barWidth * 0.5, heightCapitale, 32);
+            capitaleBar = new THREE.Mesh(geometryCapitale, materialCapitale);
+            capitaleBar.position.set(barWidth * 1.5, heightCapitale / 2, 0);
+            capitaleBar.name = 'Capitale';
+            scene.add(capitaleBar);
+        }
+
+        // --- AGGIORNAMENTO DATI IN TEMPO REALE (SIMULAZIONE) ---
+
+        function updateRealTimeMetrics() {
+            // Simula la variazione dei dati 
+            const coerenzaBase = metrics.coerenza + (metrics.karmabondsActive ? 0.005 : -0.002);
+            const sentimentoBase = metrics.sentimento + (metrics.karmabondsActive ? 0.003 : -0.001);
+            const capitaleBase = metrics.capitale + (metrics.investConfig.includes('70/30') ? 0.005 : 0.001); 
+
+            metrics.coerenza = Math.min(1.0, Math.max(0.1, coerenzaBase + (Math.random() - 0.5) * 0.01));
+            metrics.sentimento = Math.min(1.0, Math.max(0.1, sentimentoBase + (Math.random() - 0.5) * 0.01));
+            metrics.capitale = Math.min(1.0, Math.max(0.1, capitaleBase + (Math.random() - 0.5) * 0.01));
+            
+            // Simula la variazione del Wallet (guadagni casuali)
+            metrics.walletBalance += (Math.random() - 0.45) * 500;
+            metrics.walletBalance = Math.max(1000, metrics.walletBalance);
+
+            // Aggiorna la UI del pannello OI e il grafico 3D
+            updateOIPanel();
+            updateBarHeights();
+        }
+
+        function updateOIPanel() {
+            // Aggiornamento Metriche
+            document.getElementById('metricCoerenza').textContent = `${(metrics.coerenza * 100).toFixed(1)}%`;
+            document.getElementById('metricSentimento').textContent = `${(metrics.sentimento * 100).toFixed(1)}%`;
+            document.getElementById('metricCapitale').textContent = `${(metrics.capitale * 100).toFixed(1)}%`;
+
+            // Aggiornamento Wallet & Invest
+            document.getElementById('walletBalance').textContent = metrics.walletBalance.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('investConfig').textContent = metrics.investConfig;
+            document.getElementById('fundingGoal').textContent = metrics.fundingGoalRemaining.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MU';
+            updateKarmabondUI(); // Aggiorna Karmabonds
+        }
+
+        function updateBarHeights() {
+            // Funzione per aggiornare l'altezza di una singola barra
+            const updateBar = (bar, metricValue, color) => {
+                const newHeight = metricValue * 10;
+                
+                // Rimuove la vecchia barra
+                scene.remove(bar);
+                
+                // Crea una nuova geometria 
+                const newGeometry = new THREE.CylinderGeometry(1.5 * 0.5, 1.5 * 0.5, newHeight, 32);
+                
+                // Crea un nuovo mesh con lo stesso materiale e lo aggiunge alla scena
+                const newMaterial = new THREE.MeshPhongMaterial({ color: color, emissive: color, emissiveIntensity: 0.3 });
+                const newBar = new THREE.Mesh(newGeometry, newMaterial);
+                
+                newBar.position.set(bar.position.x, newHeight / 2, bar.position.z);
+                newBar.name = bar.name; 
+                scene.add(newBar);
+
+                // Assegna la nuova barra alla variabile globale
+                if (bar.name === 'Coerenza') coerenzaBar = newBar;
+                if (bar.name === 'Sentimento') sentimentoBar = newBar;
+                if (bar.name === 'Capitale') capitaleBar = newBar;
+            };
+
+            updateBar(coerenzaBar, metrics.coerenza, BAR_COLORS[0]);
+            updateBar(sentimentoBar, metrics.sentimento, BAR_COLORS[1]);
+            updateBar(capitaleBar, metrics.capitale, BAR_COLORS[2]);
+        }
+        
+        // --- ANIMAZIONE E LOOP DI RENDER ---
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Animazione opzionale: rotazione lenta della scena
+            scene.rotation.y += 0.002;
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            const width = threeDContainer.clientWidth;
+            const height = threeDContainer.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+        
+        // --- GESTIONE INTERAZIONE 3D (Mouse/Touch) ---
+
+        function setupInteractionHandlers() {
+            const element = renderer.domElement;
+
+            const handlePointerDown = (clientX, clientY) => {
+                isDragging = true;
+                previousMousePosition.x = clientX;
+                previousMousePosition.y = clientY;
+            };
+
+            const handlePointerMove = (clientX, clientY) => {
+                if (!isDragging) return;
+
+                const deltaX = clientX - previousMousePosition.x;
+                const deltaY = clientY - previousMousePosition.y;
+
+                // Rotazione attorno all'asse Y (orizzontale)
+                scene.rotation.y += deltaX * 0.005;
+
+                // Rotazione attorno all'asse X (verticale, limitata)
+                const newRotationX = scene.rotation.x + deltaY * 0.005;
+                scene.rotation.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, newRotationX));
+
+                previousMousePosition.x = clientX;
+                previousMousePosition.y = clientY;
+            };
+
+            const handlePointerUp = () => {
+                isDragging = false;
+            };
+
+            // Mouse Events
+            element.addEventListener('mousedown', (e) => handlePointerDown(e.clientX, e.clientY), false);
+            document.addEventListener('mousemove', (e) => handlePointerMove(e.clientX, e.clientY), false);
+            document.addEventListener('mouseup', handlePointerUp, false);
+
+            // Touch Events (Gestisce l'input mobile)
+            element.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
+            }, false);
+            
+            document.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+            }, false);
+            
+            document.addEventListener('touchend', handlePointerUp, false);
+        }
+
+        // Avvia l'interfaccia 3D quando la finestra è completamente caricata
+        window.onload = function() {
+            // Imposta l'altezza fissa per il contenitore 3D su schermi più piccoli
+            if (window.innerWidth < 1024) {
+                threeDContainer.style.height = '400px';
+            }
+            init();
+            updateOIPanel(); // Inizializza il pannello OI con i dati iniziali
+        };
+
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Euystacio Matrix: Open Interface (OI)</title>
     <!-- Carica Tailwind CSS per uno styling rapido e moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
