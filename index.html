@@ -1,3 +1,229 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euystacio Matrix: Open Interface (OI)</title>
+    <!-- Carica Tailwind CSS per uno styling rapido e moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Imposta il font Inter come predefinito */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d1a; /* Sfondo scuro per il tema Euystacio */
+            color: #e0e0f0; /* Testo chiaro */
+        }
+        /* Stili specifici per l'interfaccia a tema AI/Matrix */
+        .matrix-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden; /* Evita lo scroll orizzontale */
+        }
+        .shell-output {
+            background-color: #090911;
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.2);
+            border: 1px solid #1f2937;
+        }
+        /* Stile di 'glow' per gli elementi attivi */
+        .glow-green {
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.6);
+            border-color: #64ffda;
+        }
+        /* Stile del pannello Open Interface (OI) */
+        .oi-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 80%; /* Ampio su mobile */
+            max-width: 400px; /* Limita su desktop */
+            height: 100%;
+            background-color: #1a1a2e; /* Sfondo del pannello */
+            transform: translateX(100%); /* Nascosto a destra per default */
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 50;
+            border-left: 2px solid #64ffda; /* Bordo di attivazione */
+        }
+        .oi-panel.open {
+            transform: translateX(0); /* Aperto */
+            box-shadow: -10px 0 20px rgba(100, 255, 218, 0.3);
+        }
+        .backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Responsive Layout: Su schermi più grandi, usa un'interfaccia a griglia */
+        @media (min-width: 768px) {
+            .matrix-container {
+                display: grid;
+                grid-template-columns: 1fr 400px; /* Contenuto principale + pannello fisso su desktop (se non modale) */
+                min-height: 100vh;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Pannello Open Interface (OI) - Nascosto per default -->
+    <div id="oiPanel" class="oi-panel p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-[#64ffda] uppercase tracking-wider">
+                &gt; Open Interface (OI)
+            </h2>
+            <button onclick="toggleOiPanel()" class="text-white hover:text-red-500 transition duration-200 focus:outline-none p-2 rounded-full">
+                <!-- Icona X per chiudere -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Contenuto OI -->
+        <div class="space-y-4">
+            <p class="text-sm text-gray-400">
+                Modalità di interazione diretta con la Matrice Euystacio.
+            </p>
+            <div class="p-3 bg-gray-800 rounded-lg border border-gray-700">
+                <p class="text-sm font-semibold text-[#64ffda]">Stato del Core</p>
+                <ul class="text-xs space-y-1 mt-1">
+                    <li><span class="text-gray-500">KPA-01 Status:</span> <span class="text-green-400">Online (Coerenza)</span></li>
+                    <li><span class="text-gray-500">Trust Index ($\Delta$):</span> 95.4%</li>
+                    <li><span class="text-gray-500">Modalità Corrente:</span> PHOENIX_MODE_80</li>
+                </ul>
+            </div>
+
+            <!-- Pulsante di Esecuzione (Action) -->
+            <button onclick="executeNexus()" class="w-full bg-[#64ffda] text-[#0d0d1a] py-3 rounded-xl font-bold tracking-wider uppercase hover:bg-green-300 transition duration-300 focus:ring-4 focus:ring-[#64ffda] focus:ring-opacity-50">
+                NEXUS ACTIVATE (Esegui)
+            </button>
+
+            <!-- Log di Sistema (Esempio) -->
+            <div id="oiLog" class="h-48 overflow-y-auto p-3 bg-gray-900 rounded-lg border border-[#64ffda] border-opacity-30 text-xs mt-6">
+                <p class="text-[#64ffda]">&gt; OI Log Attivo...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sfondo oscurante (Backdrop) per la modalità mobile/modale -->
+    <div id="backdrop" class="backdrop" onclick="toggleOiPanel()"></div>
+
+    <!-- Contenitore Principale dell'Interfaccia (ACS Shell) -->
+    <div class="matrix-container">
+        <!-- HEADER: Intestazione e Stato di Sistema -->
+        <header class="p-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
+            <h1 class="text-2xl font-light tracking-widest text-white">
+                Prīncipālis Architectus AI
+            </h1>
+            <button onclick="toggleOiPanel()" class="bg-[#64ffda] text-[#0d0d1a] font-bold py-2 px-4 rounded-full hover:bg-green-300 transition duration-200 flex items-center shadow-lg">
+                <span class="mr-2 text-sm uppercase hidden sm:inline">OI</span>
+                <!-- Icona Menu/Interfaccia -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            </button>
+        </header>
+
+        <!-- AREA PRINCIPALE: Axiomatic Command Shell (ACS) -->
+        <main class="flex-grow p-4 md:p-8">
+            <h2 class="text-xl font-mono text-[#64ffda] mb-4 border-b border-[#64ffda] border-opacity-30 pb-1">
+                Axiomatic Command Shell (ACS)
+            </h2>
+
+            <!-- Output della Shell (basato sul suo input iniziale) -->
+            <div id="shellOutput" class="shell-output p-4 rounded-lg font-mono text-sm space-y-1">
+                <p class="text-yellow-400">[02:14:24] Attenzione: Configurazione Firebase non trovata. Esecuzione in modalità solo simulazione.</p>
+                <p class="text-red-400">[02:14:27] Autenticazione Google fallita: can't access property "app", t is undefined</p>
+                <p class="text-red-400">[02:14:31] Autenticazione Google fallita: can't access property "app", t is undefined</p>
+                <p class="text-gray-400">[02:15:00] In attesa di Input Axiomatico...</p>
+            </div>
+
+            <!-- Input della Shell (Simulazione) -->
+            <div class="mt-8">
+                <label for="commandInput" class="block text-gray-300 mb-2 font-mono text-sm">
+                    &gt; Principālis Architectus:
+                </label>
+                <input id="commandInput" type="text" placeholder="Inserisci comando (es: STATUS_REPORT, OI_ACTIVATE)"
+                       class="w-full p-3 bg-gray-800 rounded-lg border border-gray-700 focus:border-[#64ffda] focus:ring focus:ring-[#64ffda] focus:ring-opacity-50 text-white font-mono transition duration-200">
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="p-3 text-center text-xs text-gray-500 border-t border-gray-800">
+            © 2025 Euystacio Matrix - GCE Operational Framework v6.
+        </footer>
+    </div>
+
+    <script>
+        // Funzione per mostrare e nascondere il pannello OI
+        function toggleOiPanel() {
+            const panel = document.getElementById('oiPanel');
+            const backdrop = document.getElementById('backdrop');
+
+            if (panel.classList.contains('open')) {
+                panel.classList.remove('open');
+                backdrop.classList.remove('open');
+            } else {
+                panel.classList.add('open');
+                backdrop.classList.add('open');
+            }
+        }
+
+        // Funzione di simulazione per l'attivazione di NEXUS
+        function executeNexus() {
+            const oiLog = document.getElementById('oiLog');
+            const shellOutput = document.getElementById('shellOutput');
+            const timestamp = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            // Aggiunge un log all'OI
+            const newOiLog = document.createElement('p');
+            newOiLog.className = 'text-yellow-300';
+            newOiLog.textContent = `[${timestamp}] OI: NEXUS ACTIVATE Richiesto.`;
+            oiLog.appendChild(newOiLog);
+            oiLog.scrollTop = oiLog.scrollHeight; // Scrolla in fondo
+
+            // Aggiunge un output alla shell principale
+            const newShellOutput = document.createElement('p');
+            newShellOutput.className = 'text-green-400';
+            newShellOutput.textContent = `[${timestamp}] Comando: NEXUS ACTIVATE. Esecuzione del Modulo PHOENIX...`;
+            shellOutput.appendChild(newShellOutput);
+            shellOutput.scrollTop = shellOutput.scrollHeight;
+        }
+
+        // Aggiunge la funzionalità per aprire l'OI anche tramite l'input della shell
+        document.getElementById('commandInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const command = e.target.value.trim().toUpperCase();
+                e.target.value = '';
+
+                if (command === 'OI_ACTIVATE' || command === 'OI') {
+                    toggleOiPanel();
+                } else {
+                    const shellOutput = document.getElementById('shellOutput');
+                    const timestamp = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                    const newShellOutput = document.createElement('p');
+                    newShellOutput.className = 'text-gray-400';
+                    newShellOutput.textContent = `[${timestamp}] AX.CMD: Comando "${command}" non riconosciuto. In attesa...`;
+                    shellOutput.appendChild(newShellOutput);
+                    shellOutput.scrollTop = shellOutput.scrollHeight;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInAnonymously, signOut, signInWithCustomToken } from 'firebase/auth';
