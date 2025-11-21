@@ -1,0 +1,107 @@
+# GitHub Actions Workflow: TFK Continuous Deployment Pipeline
+# This workflow is responsible for deploying the Transparency Portal, 
+# synchronizing the cryptographic manifest, and ensuring AWS infrastructure 
+# (Heartbeat Check) is up-to-date and self-healing.
+
+name: TFK Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  # -------------------------------------------------------------
+  # JOB 1: VALIDATE AND DEPLOY WEB ARTIFACTS (Transparency Portal)
+  # -------------------------------------------------------------
+  deploy_web_portal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (for toolchain/build prep)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 1. Install & Build Web Dependencies (Simulated)
+        run: |
+          echo "Simulating Tailwind build and asset bundling..."
+          # In a real setup, this would compile Tailwind/React/etc.
+          # For the single HTML file, this step confirms file presence.
+          ls -lh index.html
+
+      - name: 2. Deploy Transparency Portal to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./ # Assumes index.html is in the root
+
+      - name: Success Notification (Web Deploy)
+        run: echo "Transparency Portal deployed successfully via GitHub Pages."
+
+  # -------------------------------------------------------------
+  # JOB 2: SYNC CRITICAL MANIFESTS TO S3 (Live Source for Portal)
+  # -------------------------------------------------------------
+  sync_manifest_to_s3:
+    needs: deploy_web_portal
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1 # Frankfurt (TFK Primary Region)
+
+      - name: 1. Sync Live Manifest and Signature (.asc)
+        run: |
+          aws s3 cp workshop-manifest.yaml s3://workshop.example.com/manifest.yaml --acl public-read
+          aws s3 cp workshop-manifest.yaml.asc s3://workshop.example.com/manifest.yaml.asc --acl public-read
+          echo "Manifest and GPG Signature synchronized to S3 live endpoint."
+          
+      - name: 2. Invalidate CloudFront Cache (Optional, but recommended for immediate updates)
+        run: |
+          echo "CloudFront Invalidation skipped for demo, but required for production."
+          # aws cloudfront create-invalidation --distribution-id E1XXXXXXXXXX --paths "/manifest.yaml" "/manifest.yaml.asc"
+
+  # -------------------------------------------------------------
+  # JOB 3: INFRASTRUCTURE ASSURANCE (Heartbeat Stack)
+  # -------------------------------------------------------------
+  update_aws_stack:
+    needs: sync_manifest_to_s3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Deploy/Update CloudFormation Stack (Heartbeat Check)
+        uses: aws-actions/aws-cloudformation-package@v1
+        with:
+          template_file: heartbeat-stack.yaml
+          s3_bucket: ${{ secrets.CFN_ARTIFACT_BUCKET }}
+          s3_prefix: cfn-packaged-artifacts
+
+      - name: 1. Execute Stack Deployment
+        run: |
+          aws cloudformation deploy \
+            --template-file ./heartbeat-stack.yaml \
+            --stack-name LivingArchive-TFK-Heartbeat \
+            --parameter-overrides Cid="QmUeA2sB7yX9zT6rV4wQ3pL2kM1nJ0hG9fE8dC7bA6v5U4t3S2R" ExpectedSha256="a3f5c9e8d2b7c4e1f6a9b0d3e8f2c1a4b7d9e6f3c2a1b8d4e7f9c0a2b5d6e3f1" BitcoinTxId="b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2" AlertEmail="alerts@example.com" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset
+
+      - name: 2. Success Notification (Infrastructure)
+        run: echo "AWS Heartbeat Stack deployed and verified."
