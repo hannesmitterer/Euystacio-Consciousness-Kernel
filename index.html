@@ -1,4 +1,994 @@
 <!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPL Cognitive Core v10.0 (HUD Interface)</title>
+    <!-- Lade Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lade D3.js für die Graph-Visualisierung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Dunkler, futuristischer Hintergrund */
+            background-color: #0a0f18; 
+            background-image: radial-gradient(circle at 50% 10%, #152238 0%, #0a0f18 70%);
+            color: #e5e7eb; /* Helle Standard-Textfarbe */
+            height: 100vh;
+        }
+
+        /* Holografischer Container-Stil */
+        .hud-container {
+            background-color: rgba(17, 24, 39, 0.7); /* Darker, slightly transparent background */
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(40, 190, 255, 0.3); /* Cyan-Neon Rand */
+            box-shadow: 0 0 15px rgba(40, 190, 255, 0.2); /* Sanfter Glow */
+        }
+        
+        /* Neon-Akzentfarbe: Cyan */
+        .neon-text {
+            color: #4dd0e1; 
+        }
+
+        /* Custom toggle switch styling (Angepasst an Dark Mode/HUD) */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #374151; /* Dark Gray */
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4dd0e1; /* Neon Cyan */
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Style für den D3 Graph im Dark Mode */
+        #memory-graph-container {
+            width: 100%;
+            min-height: 600px;
+            border: 1px solid rgba(75, 85, 99, 0.5); 
+            border-radius: 0.5rem;
+            background-color: rgba(31, 41, 55, 0.7);
+        }
+        .node circle {
+            stroke: #4dd0e1; /* Neon Cyan */
+            stroke-width: 3px;
+            cursor: pointer;
+        }
+        .node text {
+            font-size: 10px;
+            font-weight: bold;
+            fill: #d1d5db; /* Light Gray */
+        }
+        .link {
+            stroke: #38bdf8; /* Sky Blue */
+            stroke-opacity: 0.8;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Haupt-Container für Sidebar und Main Content -->
+    <div class="flex flex-col md:flex-row max-w-7xl mx-auto space-y-6 md:space-y-0 md:space-x-6 h-[90vh]">
+        
+        <!-- Linke Sidebar: Session Historie (HUD Style) -->
+        <div id="history-sidebar" class="md:w-1/3 w-full shadow-xl rounded-xl p-4 flex flex-col h-full hud-container">
+            <h2 class="text-xl font-bold neon-text mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: #4dd0e1;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Sitzungshistorie (Echtzeit)
+            </h2>
+            <div id="history-list" class="flex-grow overflow-y-auto space-y-2 pr-2">
+                <p id="history-loading" class="text-sm text-gray-400">Lade Verlauf...</p>
+                <!-- Historie-Einträge werden hier gerendert -->
+            </div>
+        </div>
+
+        <!-- Rechte Hauptinhaltsbereich (HUD Style) -->
+        <div class="md:w-2/3 w-full shadow-2xl rounded-xl p-6 md:p-10 flex flex-col space-y-6 overflow-y-auto hud-container border-t-4 border-cyan-400">
+            
+            <!-- Header und Status -->
+            <header>
+                <h1 class="text-3xl font-extrabold neon-text mb-2">
+                    CPL Cognitive Core (PHASE X)
+                </h1>
+                <p class="text-gray-400">
+                    Kontextbasierte Grounding-Priorisierung: Metadaten des Kontexts optimieren die Grounding-Search-Queries.
+                </p>
+                <div class="mt-4 p-3 bg-gray-800 rounded-lg text-sm border border-cyan-400/30">
+                    <p class="font-semibold text-gray-300">System Status:</p>
+                    <p id="auth-status" class="text-gray-400 truncate">Initialisiere Firebase und Authentifizierung...</p>
+                </div>
+            </header>
+
+            <!-- NEU: Tab-Navigation -->
+            <div class="flex border-b border-gray-700">
+                <button id="tab-generator" class="px-4 py-2 text-sm font-medium border-b-2 border-cyan-400 neon-text focus:outline-none">
+                    Generator
+                </button>
+                <button id="tab-graph" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300 focus:outline-none border-b-2 border-transparent hover:border-gray-500">
+                    Gedächtnis-Graph
+                </button>
+            </div>
+            
+            <!-- Inhalts-Container für Generator -->
+            <div id="content-generator" class="space-y-6">
+
+                <!-- Aktueller Kontext-Status (PHASE X Erweiterung, HUD Design) -->
+                <div id="active-context-display" class="p-3 bg-yellow-900/50 border border-yellow-600 rounded-lg hidden">
+                    <div class="flex justify-between items-center">
+                        <p class="text-sm font-semibold text-yellow-300 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: #fcd34d;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.247m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.247"></path></svg>
+                            Aktiver Kontext (Grounding Priorität aktiv):
+                        </p>
+                        <button id="clear-context-button" class="text-xs text-red-400 hover:text-red-300 font-medium">Entfernen</button>
+                    </div>
+                    <p id="context-query-summary" class="text-xs text-gray-300 mt-1 truncate italic"></p>
+                    <p id="context-keywords-display" class="text-xs text-yellow-300 mt-1 font-mono bg-yellow-900 p-1 rounded border border-yellow-500/50">
+                        Schlüsselwörter für Grounding: [Wird extrahiert...]
+                    </p>
+                </div>
+
+                <!-- Input & Controls -->
+                <div class="space-y-4">
+                    <textarea 
+                        id="user-query" 
+                        rows="3" 
+                        placeholder="Geben Sie eine Frage ein. Der aktive Kontext optimiert die Grounding-Suche."
+                        class="w-full p-3 border border-gray-700 bg-gray-800 rounded-lg focus:ring-cyan-400 focus:border-cyan-400 transition duration-150 text-white"
+                    ></textarea>
+                    
+                    <!-- Output Mode Toggle -->
+                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg border border-cyan-400/30">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-6 h-6 neon-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                            <span class="font-semibold text-gray-300">Antwort-Modus:</span>
+                            <span id="output-mode-label" class="text-gray-400 font-medium">Natürlich (Text)</span>
+                        </div>
+                        
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="output-mode-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <button 
+                        id="submit-button" 
+                        disabled
+                        class="w-full px-6 py-3 bg-cyan-600 text-gray-900 font-bold rounded-lg shadow-lg shadow-cyan-500/40 hover:bg-cyan-500 transition duration-150 flex items-center justify-center disabled:opacity-50"
+                    >
+                        <svg id="button-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Antwort generieren & Speichern
+                    </button>
+                    <div id="loading-indicator" class="hidden text-center text-sm text-cyan-400 font-medium">
+                        Verarbeite Anfrage und führe Grounding Search durch (mit Kontext-Priorisierung)...
+                    </div>
+                </div>
+
+                <!-- Ergebnisbereich der aktuellen Generierung -->
+                <div class="border-t border-gray-700 pt-6">
+                    <h2 class="text-2xl font-semibold text-white mb-4">Generierte Antwort: <span id="output-format-display" class="text-base font-normal neon-text">(Text)</span></h2>
+                    
+                    <pre id="response-text" class="min-h-[100px] p-4 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 leading-relaxed overflow-auto whitespace-pre-wrap font-mono text-sm">
+                        Ihre Antwort wird hier erscheinen.
+                    </pre>
+
+                    <div id="sources-container" class="mt-4 p-4 bg-yellow-900/50 border border-yellow-600 rounded-lg hidden">
+                        <h3 class="text-lg font-semibold text-yellow-300 mb-2 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: #fcd34d;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.814a4 4 0 000-5.656l-4-4a4 4 0 00-5.656 5.656l1.1 1.1"></path></svg>
+                            Verifizierte Quellen (Grounding)
+                        </h3>
+                        <ul id="sources-list" class="list-disc list-inside space-y-1 text-sm text-yellow-400">
+                            <!-- Quellen werden hier eingefügt -->
+                        </ul>
+                    </div>
+                    
+                    <div id="error-message" class="mt-4 p-4 bg-red-900/50 border border-red-600 rounded-lg text-red-300 hidden">
+                        <!-- Fehlermeldungen werden hier eingefügt -->
+                    </div>
+                </div>
+
+                <!-- Detailansicht der ausgewählten Historie -->
+                <div id="history-detail-container" class="border-t border-gray-700 pt-6 hidden mt-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold text-white">Historie-Details</h2>
+                        <button id="activate-context-button" class="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-500 transition duration-150 text-sm">
+                            Als Kontext aktivieren
+                        </button>
+                    </div>
+                    
+                    <h3 class="font-semibold text-gray-300 mb-2">Anfrage: <span id="detail-query-header" class="text-base font-normal neon-text"></span></h3>
+
+                    <div class="space-y-4">
+                        <p class="text-sm font-medium text-gray-400">Modus: <span id="detail-mode" class="font-bold text-white"></span> - Zeitstempel: <span id="detail-timestamp" class="font-bold text-white"></span></p>
+                        
+                        <h3 class="font-semibold text-gray-300">Antwort:</h3>
+                        <pre id="detail-response-text" class="p-4 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 leading-relaxed overflow-auto whitespace-pre-wrap font-mono text-sm"></pre>
+
+                        <h3 class="font-semibold text-gray-300">Quellen:</h3>
+                        <ul id="detail-sources-list" class="space-y-1 text-sm text-gray-300 p-4 bg-yellow-900/50 border border-yellow-600 rounded-lg"></ul>
+                    </div>
+                </div>
+            </div> <!-- Ende content-generator -->
+
+            <!-- Inhalts-Container für Gedächtnis-Graph -->
+            <div id="content-graph" class="space-y-4 hidden">
+                <h2 class="text-2xl font-semibold text-white">Gedächtnis-Graph Visualisierung</h2>
+                <p class="text-gray-400">Jeder Kreis ist eine Sitzung. Linien zeigen an, welche Sitzungen als Kontext für die nächste verwendet wurden.</p>
+                <div id="memory-graph-container">
+                    <svg id="memory-graph-svg" class="w-full h-full"></svg>
+                </div>
+            </div>
+
+        </div> <!-- Ende Main Content -->
+    </div> <!-- Ende Haupt-Container -->
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Globale Firebase Instanzen
+        let app, db, auth, userId = null;
+        let isAuthReady = false;
+        let activeContext = null; 
+        let allSessions = []; 
+
+        // API Configuration
+        const apiKey = ""; 
+        const modelName = "gemini-2.5-flash-preview-09-2025";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+        // DOM Elements
+        const userQueryInput = document.getElementById('user-query');
+        const submitButton = document.getElementById('submit-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const responseText = document.getElementById('response-text');
+        const sourcesContainer = document.getElementById('sources-container');
+        const sourcesList = document.getElementById('sources-list');
+        const errorMessageDiv = document.getElementById('error-message');
+        const outputModeToggle = document.getElementById('output-mode-toggle');
+        const outputModeLabel = document.getElementById('output-mode-label');
+        const outputFormatDisplay = document.getElementById('output-format-display');
+        const authStatusElement = document.getElementById('auth-status');
+        const historyList = document.getElementById('history-list');
+        const historyLoading = document.getElementById('history-loading');
+        const activateContextButton = document.getElementById('activate-context-button');
+        const clearContextButton = document.getElementById('clear-context-button');
+        const activeContextDisplay = document.getElementById('active-context-display');
+        const contextQuerySummary = document.getElementById('context-query-summary');
+        const contextKeywordsDisplay = document.getElementById('context-keywords-display'); 
+        
+        // Detail View Elements
+        const historyDetailContainer = document.getElementById('history-detail-container');
+        const detailQueryHeader = document.getElementById('detail-query-header');
+        const detailMode = document.getElementById('detail-mode');
+        const detailTimestamp = document.getElementById('detail-timestamp');
+        const detailResponseText = document.getElementById('detail-response-text');
+        const detailSourcesList = document.getElementById('detail-sources-list');
+
+        // Tab-Elemente und Graph-Container
+        const tabGenerator = document.getElementById('tab-generator');
+        const tabGraph = document.getElementById('tab-graph');
+        const contentGenerator = document.getElementById('content-generator');
+        const contentGraph = document.getElementById('content-graph');
+        const graphSvg = document.getElementById('memory-graph-svg');
+        const graphContainer = document.getElementById('memory-graph-container');
+
+
+        // JSON Schema for structured output (Example: Key Events)
+        const EVENT_SCHEMA = {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    "title": { "type": "STRING", "description": "The concise title of the news event." },
+                    "summary": { "type": "STRING", "description": "A brief, one-sentence summary of the event." },
+                    "relevance_score": { "type": "NUMBER", "description": "A score from 1 to 10 indicating the global importance." }
+                },
+                "required": ["title", "summary"]
+            }
+        };
+
+        // --- PHASE X: Metadaten-Extraktion ---
+        /**
+         * Simuliert die Extraktion von Schlüsselwörtern aus einer Kontext-Anfrage.
+         * Filtert Stoppwörter und gibt die ersten 3 relevanten Wörter zurück.
+         * @param {string} query Die ursprüngliche Benutzeranfrage aus der Kontext-Session.
+         * @returns {string[]} Array von Schlüsselwörtern.
+         */
+        function extractContextKeywords(query) {
+            const stopwords = new Set([
+                'der', 'die', 'das', 'ein', 'eine', 'einer', 'eines', 'von', 'zu', 
+                'und', 'oder', 'ist', 'sind', 'war', 'es', 'mit', 'für', 'an', 'im',
+                'was', 'wie', 'wo', 'wer', 'den', 'dem', 'des', 'sich', 'auch', 'ich', 
+                'du', 'er', 'sie', 'man', 'dass', 'diese', 'dieser', 'dieses', 'vom'
+            ]);
+
+            const words = query.toLowerCase()
+                .replace(/[^a-zäöüß\s]/g, '') 
+                .split(/\s+/) 
+                .filter(word => word.length > 2 && !stopwords.has(word)); 
+
+            return words.slice(0, 3); 
+        }
+
+        // --- Firebase Initialization and Auth ---
+
+        async function initializeFirebase() {
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                if (!firebaseConfig.apiKey) {
+                    authStatusElement.textContent = "FEHLER: Firebase Konfiguration fehlt.";
+                    return;
+                }
+
+                // 1. Initialisierung
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('Debug');
+
+                // 2. Authentifizierung
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                userId = auth.currentUser?.uid || 'anonymous';
+                isAuthReady = true;
+                authStatusElement.textContent = `Authentifiziert (UID: ${userId}).`;
+
+                // Starte das Laden der Historie nach erfolgreicher Authentifizierung
+                loadSessionHistory();
+                
+            } catch (error) {
+                console.error("Firebase Initialisierungs-/Authentifizierungsfehler:", error);
+                authStatusElement.textContent = `AUTH FEHLER: ${error.message}`;
+            }
+        }
+        
+        // Speichert den Generierungseintrag in Firestore
+        async function saveSessionEntry(userQuery, mode, generatedText, sources) {
+            if (!isAuthReady || !userId) return;
+
+            try {
+                // Private Collection Path: /artifacts/{appId}/users/{userId}/sessions
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const sessionCollectionPath = `artifacts/${appId}/users/${userId}/sessions`;
+                const sessionsRef = collection(db, sessionCollectionPath);
+
+                const sessionEntry = {
+                    query: userQuery,
+                    mode: mode,
+                    timestamp: new Date().toISOString(),
+                    response: {
+                        text: generatedText,
+                        sources: sources.map(s => ({ uri: s.uri, title: s.title })),
+                    },
+                    linked_to_context_id: activeContext ? activeContext.id : null 
+                };
+                
+                await addDoc(sessionsRef, sessionEntry);
+                console.log("Session-Eintrag erfolgreich in Firestore gespeichert.");
+
+            } catch (e) {
+                console.error("Fehler beim Speichern in Firestore:", e);
+                errorMessageDiv.textContent = `Speicherfehler: Konnte den Eintrag nicht persistieren. Grund: ${e.message}`;
+                errorMessageDiv.classList.remove('hidden');
+            }
+        }
+        
+        // Lädt und überwacht die Session-Historie in Echtzeit
+        function loadSessionHistory() {
+            if (!isAuthReady || !userId) return;
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const sessionCollectionPath = `artifacts/${appId}/users/${userId}/sessions`;
+            const sessionsRef = collection(db, sessionCollectionPath);
+
+            const q = query(sessionsRef); 
+
+            historyLoading.classList.remove('hidden');
+
+            onSnapshot(q, (querySnapshot) => {
+                const sessions = [];
+                querySnapshot.forEach((doc) => {
+                    sessions.push({ id: doc.id, ...doc.data() }); 
+                });
+
+                // Sortiere die Sessions nach Zeitstempel (neueste zuerst) in JavaScript
+                sessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                allSessions = sessions; 
+                
+                renderHistory(sessions);
+                renderMemoryGraph(sessions); 
+                historyLoading.classList.add('hidden');
+            }, (error) => {
+                console.error("Fehler beim Abrufen der Historie:", error);
+                historyLoading.textContent = "Fehler beim Laden der Historie.";
+            });
+        }
+        
+        function formatTimestamp(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' (' + date.toLocaleDateString('de-DE') + ')';
+        }
+
+        // Rendert die Historie-Einträge in der Sidebar (HUD Style Update)
+        function renderHistory(sessions) {
+            historyList.innerHTML = '';
+            
+            if (sessions.length === 0) {
+                historyList.innerHTML = '<p class="text-sm text-gray-500">Keine gespeicherten Sitzungen vorhanden.</p>';
+                return;
+            }
+
+            sessions.forEach(session => {
+                const item = document.createElement('div');
+                // Markiere den Link, wenn ein Kontext gesetzt wurde
+                const linkedClass = session.linked_to_context_id ? 'border-l-4 border-yellow-500 pl-2' : '';
+
+                item.className = `p-3 border border-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-800 transition duration-150 ${linkedClass}`;
+                item.dataset.sessionId = session.id;
+                
+                const truncatedQuery = session.query.length > 50 ? session.query.substring(0, 47) + '...' : session.query;
+                
+                let modeColor = session.mode === 'STRUCTURED' ? 'text-green-400' : 'text-cyan-400';
+                let modeIcon = session.mode === 'STRUCTURED' 
+                    ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>'
+                    : '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>';
+                
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-semibold ${modeColor} flex items-center">${modeIcon} &nbsp;${session.mode}</span>
+                        <span class="text-xs text-gray-500">${formatTimestamp(session.timestamp)}</span>
+                    </div>
+                    <p class="text-sm text-gray-200 font-medium">${truncatedQuery}</p>
+                `;
+
+                item.addEventListener('click', () => showSessionDetails(session));
+                historyList.appendChild(item);
+            });
+        }
+        
+        // Zeigt die Details einer ausgewählten Session an (HUD Style Update)
+        let currentSessionDetails = null;
+        function showSessionDetails(session) {
+            currentSessionDetails = session; 
+            
+            historyDetailContainer.classList.remove('hidden');
+            
+            detailQueryHeader.textContent = session.query;
+            detailMode.textContent = session.mode;
+            detailTimestamp.textContent = formatTimestamp(session.timestamp);
+            
+            const isStructured = session.mode === 'STRUCTURED';
+            if (isStructured) {
+                // Structured output uses high-contrast mono
+                detailResponseText.classList.remove('text-gray-300', 'bg-gray-800');
+                detailResponseText.classList.add('bg-black', 'text-green-400', 'font-mono');
+            } else {
+                // Natural output uses standard dark mode colors
+                detailResponseText.classList.remove('bg-black', 'text-green-400');
+                detailResponseText.classList.add('text-gray-300', 'bg-gray-800');
+            }
+            
+            detailResponseText.textContent = session.response.text;
+            
+            // Rendere Quellen
+            detailSourcesList.innerHTML = '';
+            if (session.response.sources && session.response.sources.length > 0) {
+                detailSourcesList.classList.remove('bg-yellow-900/50', 'border-yellow-600');
+                detailSourcesList.classList.add('bg-gray-800/50', 'border-gray-600/50');
+                session.response.sources.forEach(source => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = source.uri;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.textContent = `${source.title} (${new URL(source.uri).hostname})`;
+                    a.classList.add('text-cyan-400', 'hover:underline', 'truncate', 'block');
+                    li.appendChild(a);
+                    detailSourcesList.appendChild(li);
+                });
+            } else {
+                detailSourcesList.innerHTML = '<li>Keine Grounding-Quellen für diese Sitzung verfügbar.</li>';
+                detailSourcesList.classList.remove('bg-gray-800/50', 'border-gray-600/50');
+                detailSourcesList.classList.add('bg-yellow-900/50', 'border-yellow-600');
+            }
+
+            // Aktualisiere den Button-Text basierend auf dem aktiven Kontext
+            if (activeContext && activeContext.id === session.id) {
+                activateContextButton.textContent = "Als Kontext DEAKTIVIEREN";
+                activateContextButton.classList.remove('bg-green-600', 'hover:bg-green-500');
+                activateContextButton.classList.add('bg-red-600', 'hover:bg-red-500');
+            } else {
+                activateContextButton.textContent = "Als Kontext aktivieren";
+                activateContextButton.classList.remove('bg-red-600', 'hover:bg-red-500');
+                activateContextButton.classList.add('bg-green-600', 'hover:bg-green-500');
+            }
+            
+            historyDetailContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // --- Kontext-Management Funktionen ---
+        
+        function setContext(session) {
+            if (activeContext && activeContext.id === session.id) {
+                activeContext = null;
+                activateContextButton.textContent = "Als Kontext aktivieren";
+                activateContextButton.classList.remove('bg-red-600', 'hover:bg-red-500');
+                activateContextButton.classList.add('bg-green-600', 'hover:bg-green-500');
+            } else {
+                activeContext = session;
+                activateContextButton.textContent = "Als Kontext DEAKTIVIEREN";
+                activateContextButton.classList.remove('bg-green-600', 'hover:bg-green-500');
+                activateContextButton.classList.add('bg-red-600', 'hover:bg-red-500');
+            }
+            updateContextDisplay();
+        }
+
+        function clearContext() {
+            activeContext = null;
+            updateContextDisplay();
+            if (currentSessionDetails) {
+                 activateContextButton.textContent = "Als Kontext aktivieren";
+                 activateContextButton.classList.remove('bg-red-600', 'hover:bg-red-500');
+                 activateContextButton.classList.add('bg-green-600', 'hover:bg-green-500');
+            }
+        }
+
+        // Aktualisiert die Anzeige des aktiven Kontexts und extrahiert Keywords für PHASE X
+        function updateContextDisplay() {
+            if (activeContext) {
+                const querySummary = activeContext.query.length > 80 ? activeContext.query.substring(0, 77) + '...' : activeContext.query;
+                contextQuerySummary.textContent = `${formatTimestamp(activeContext.timestamp)}: "${querySummary}"`;
+                
+                // PHASE X: Schlüsselwörter extrahieren und anzeigen
+                const keywords = extractContextKeywords(activeContext.query);
+                activeContext.context_keywords = keywords; 
+                contextKeywordsDisplay.textContent = `Schlüsselwörter für Grounding: [${keywords.join(', ')}]`;
+                
+                activeContextDisplay.classList.remove('hidden');
+            } else {
+                activeContextDisplay.classList.add('hidden');
+                contextKeywordsDisplay.textContent = 'Schlüsselwörter für Grounding: [Kein Kontext aktiv]';
+            }
+        }
+
+        // --- Core Logic ---
+
+        // Hilfsfunktion zur Steuerung des UI-Zustands
+        function setUIState(isProcessing) {
+            submitButton.disabled = isProcessing || !isAuthReady; 
+            submitButton.querySelector('#button-icon').classList.toggle('animate-spin', isProcessing);
+            loadingIndicator.classList.toggle('hidden', !isProcessing);
+            sourcesContainer.classList.add('hidden');
+            errorMessageDiv.classList.add('hidden');
+            if (isProcessing) {
+                responseText.textContent = activeContext ? "Generiere Antwort basierend auf Kontext und priorisierter Suche..." : "Generiere Antwort...";
+            }
+            // Reset JSON formatting class
+            responseText.classList.remove('bg-black', 'text-green-400');
+            responseText.classList.add('text-gray-300', 'bg-gray-800');
+        }
+        
+        // Hilfsfunktion zur Durchführung des API-Aufrufs mit exponentiellem Backoff
+        async function fetchWithBackoff(url, options, maxRetries = 5) {
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    if (response.status === 429 || response.status >= 500) {
+                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                } catch (error) {
+                    if (attempt === maxRetries - 1) {
+                        throw error;
+                    }
+                    const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        // --- PHASE X: Dynamische Query-Erzeugung ---
+        /**
+         * Erzeugt die optimierten Google Search Queries.
+         * @param {string} userQuery Die aktuelle Benutzeranfrage.
+         * @param {string[]} contextKeywords Extrahiert Schlüsselwörter aus dem aktiven Kontext.
+         * @returns {string[]} Array von optimierten Suchanfragen.
+         */
+        function generateOptimizedQueries(userQuery, contextKeywords) {
+            const queries = [];
+            
+            // 1. Basis-Query (immer enthalten)
+            queries.push(userQuery);
+            
+            // 2. Kontext-Priorisierungs-Query (PHASE X)
+            if (contextKeywords && contextKeywords.length > 0) {
+                const keywordString = contextKeywords.join(' ');
+                // Priorisierte Abfrage: Kombiniert aktuelle Frage mit Kontext-Keywords
+                queries.push(`${userQuery} ${keywordString}`);
+                
+                // Eine reine Kontext-Abfrage (optional, zur breiteren Grounding-Basis)
+                queries.push(`latest news about ${keywordString}`);
+            }
+
+            // 3. Sicherheits-Query (wenn die Hauptfrage sehr kurz ist)
+            if (userQuery.split(/\s+/).length < 5) {
+                queries.push(`detailed information on ${userQuery}`);
+            }
+
+            // Rückgabe der einzigartigen Queries (Set eliminiert Duplikate)
+            return [...new Set(queries)].slice(0, 3); 
+        }
+
+        async function generateContent() {
+            const userQuery = userQueryInput.value.trim();
+            const isStructuredMode = outputModeToggle.checked;
+            const mode = isStructuredMode ? 'STRUCTURED' : 'NATURAL';
+
+            if (!userQuery) {
+                errorMessageDiv.textContent = "Bitte geben Sie eine Frage ein.";
+                errorMessageDiv.classList.remove('hidden');
+                return;
+            }
+            if (!isAuthReady) {
+                errorMessageDiv.textContent = "Das System initialisiert noch. Bitte warten Sie einen Moment.";
+                errorMessageDiv.classList.remove('hidden');
+                return;
+            }
+
+            setUIState(true);
+            
+            // --- 1. Grounding Query Preparation (PHASE X) ---
+            const contextKeywords = activeContext ? activeContext.context_keywords : [];
+            const optimizedQueries = generateOptimizedQueries(userQuery, contextKeywords);
+            
+            // --- 2. Payload Setup (Kontext-Integration) ---
+            const contents = [];
+
+            // Füge aktiven Kontext als Chat-Historie hinzu (PHASE VIII)
+            if (activeContext) {
+                contents.push({ role: "user", parts: [{ text: `KONTEXT: Dies war die vorherige Frage/Anweisung: "${activeContext.query}".` }] });
+                contents.push({ role: "model", parts: [{ text: `KONTEXT-ANTWORT: Dies war die zugehörige Antwort des Kernels: "${activeContext.response.text}".` }] });
+                contents.push({
+                    role: "user", 
+                    parts: [{ text: "Bitte berücksichtige den oben angegebenen KONTEXT-Abschnitt bei der Beantwortung der folgenden Hauptanfrage." }] 
+                });
+            }
+
+            // Füge die aktuelle Benutzeranfrage hinzu (Role: User)
+            contents.push({ parts: [{ text: userQuery }] });
+
+
+            const payload = {
+                contents: contents, 
+                // Verwendung der PHASE X optimierten Queries
+                tools: [{ "google_search": { queries: optimizedQueries } }], 
+            };
+            
+            if (isStructuredMode) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: EVENT_SCHEMA,
+                };
+                payload.systemInstruction = {
+                    parts: [{ text: "You are a data extraction bot. Your sole function is to identify and extract key, current global news events from the search results and strictly return them as a JSON array matching the provided schema. Do not output any text outside of the JSON block." }]
+                };
+            } else {
+                // Die Systemanweisung wird nun durch die optimierte Query unterstützt
+                payload.systemInstruction = {
+                    parts: [{ text: "Act as a world-class financial analyst. Provide a concise, single-paragraph summary of the key findings based on the search results. If historical context is provided, reference it appropriately in your summary." }]
+                };
+            }
+            
+            // Debugging des generierten Payloads (wichtig für die Verifizierung von PHASE X)
+            console.log("PHASE X - Generierter Grounding Payload:", JSON.stringify(payload.tools[0].google_search.queries));
+
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            // --- 3. API Call & Response Processing ---
+            let finalGeneratedText = '';
+            let finalSources = [];
+
+            try {
+                const response = await fetchWithBackoff(apiUrl, options);
+                const result = await response.json();
+                
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    let text = candidate.content.parts[0].text;
+                    
+                    if (isStructuredMode) {
+                        try {
+                            const parsedJson = JSON.parse(text);
+                            finalGeneratedText = JSON.stringify(parsedJson, null, 2);
+                            
+                            // JSON Highlighting
+                            responseText.classList.remove('text-gray-300', 'bg-gray-800');
+                            responseText.classList.add('bg-black', 'text-green-400');
+                            
+                        } catch (e) {
+                            finalGeneratedText = "FEHLER: Der Kern hat keinen gültigen JSON-String zurückgegeben. Raw Output:\n" + text;
+                        }
+                    } else {
+                        finalGeneratedText = text;
+                    }
+                    
+                    responseText.textContent = finalGeneratedText;
+                    
+                    // --- 4. Grounding Source Extraction ---
+                    const groundingMetadata = candidate.groundingMetadata;
+                    
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        finalSources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+                    
+                    // Rendere Quellen
+                    sourcesList.innerHTML = '';
+                    if (finalSources.length > 0) {
+                        finalSources.forEach(source => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = source.uri;
+                            a.target = '_blank';
+                            a.rel = 'noopener noreferrer';
+                            a.textContent = `${source.title} (${new URL(source.uri).hostname})`;
+                            a.classList.add('text-cyan-400', 'hover:underline', 'truncate', 'block');
+                            li.appendChild(a);
+                            sourcesList.appendChild(li);
+                        });
+                        sourcesContainer.classList.remove('hidden');
+                    } else {
+                        sourcesContainer.classList.add('hidden');
+                    }
+                    
+                    // --- 5. Speichere in Firestore & Context Reset ---
+                    await saveSessionEntry(userQuery, mode, finalGeneratedText, finalSources);
+                    clearContext(); 
+                    
+                } else {
+                    responseText.textContent = "Konnte keine gültige Antwort vom Kern erhalten.";
+                    errorMessageDiv.textContent = result.promptFeedback?.blockReason || "Unbekannter Fehler bei der Generierung.";
+                    errorMessageDiv.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error("API Fetch Error:", error);
+                responseText.textContent = "Verarbeitungsfehler: Die Anfrage konnte nicht abgeschlossen werden.";
+                errorMessageDiv.textContent = `Netzwerk- oder API-Fehler: ${error.message}`;
+                errorMessageDiv.classList.remove('hidden');
+            } finally {
+                setUIState(false);
+            }
+        }
+
+        // --- Graph Visualization (D3.js) ---
+
+        function renderMemoryGraph(sessions) {
+            if (!sessions || sessions.length === 0 || !document.getElementById('memory-graph-svg')) {
+                const svgElement = document.getElementById('memory-graph-svg');
+                if (svgElement) {
+                    svgElement.innerHTML = '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="16" fill="#6b7280">Keine Sitzungsdaten zum Visualisieren vorhanden.</text>';
+                }
+                return;
+            }
+
+            const containerWidth = graphContainer.clientWidth;
+            const containerHeight = 600;
+
+            const svg = d3.select("#memory-graph-svg")
+                .attr("width", containerWidth)
+                .attr("height", containerHeight)
+                .attr("viewBox", [0, 0, containerWidth, containerHeight])
+                .html(''); 
+
+            const nodes = sessions.map(s => ({
+                id: s.id,
+                query: s.query.substring(0, 30) + (s.query.length > 30 ? '...' : ''),
+                mode: s.mode
+            }));
+
+            const links = sessions
+                .filter(s => s.linked_to_context_id)
+                .map(s => ({
+                    source: s.linked_to_context_id, 
+                    target: s.id,                   
+                    value: 1 
+                }));
+
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(containerWidth / 2, containerHeight / 2));
+
+            const link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(links)
+                .join("line")
+                .attr("class", "link");
+
+            const node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("g")
+                .data(nodes)
+                .join("g")
+                .attr("class", "node");
+
+            node.append("circle")
+                .attr("r", 15)
+                .attr("fill", d => d.mode === 'STRUCTURED' ? "#10b981" : "#4dd0e1") // Green for structured, Cyan for natural
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            node.append("text")
+                .attr("dy", 25)
+                .attr("text-anchor", "middle")
+                .text(d => d.query);
+            
+            node.append("title").text(d => `Sitzung: ${d.id}\nAnfrage: ${allSessions.find(s => s.id === d.id)?.query}`);
+
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+
+        // --- Event Listeners and Initial Setup ---
+
+        // Tab-Umschaltung
+        function switchTab(target) {
+            
+            const activeClass = 'border-cyan-400 neon-text';
+            const inactiveClass = 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-500';
+
+            tabGenerator.classList.remove(activeClass, inactiveClass);
+            tabGraph.classList.remove(activeClass, inactiveClass);
+            
+            contentGenerator.classList.add('hidden');
+            contentGraph.classList.add('hidden');
+
+            if (target === 'generator') {
+                tabGenerator.classList.add(activeClass);
+                tabGraph.classList.add(inactiveClass);
+                contentGenerator.classList.remove('hidden');
+            } else if (target === 'graph') {
+                tabGraph.classList.add(activeClass);
+                tabGenerator.classList.add(inactiveClass);
+                contentGraph.classList.remove('hidden');
+                renderMemoryGraph(allSessions); 
+            }
+        }
+
+        tabGenerator.addEventListener('click', () => switchTab('generator'));
+        tabGraph.addEventListener('click', () => switchTab('graph'));
+
+        // Event Listeners for UI control
+        outputModeToggle.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            outputModeLabel.textContent = isChecked ? "Strukturiert (JSON)" : "Natürlich (Text)";
+            outputFormatDisplay.textContent = isChecked ? "(JSON)" : "(Text)";
+            responseText.textContent = isChecked 
+                ? "Der Kern wird eine Antwort im JSON-Format generieren, basierend auf dem definierten Schema." 
+                : "Ihre Antwort wird hier erscheinen.";
+        });
+
+        // Kontext-Aktivierung / Deaktivierung
+        activateContextButton.addEventListener('click', () => {
+            if (currentSessionDetails) {
+                setContext(currentSessionDetails);
+            }
+        });
+        
+        // Kontext entfernen
+        clearContextButton.addEventListener('click', clearContext);
+
+        submitButton.addEventListener('click', generateContent);
+        userQueryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !submitButton.disabled) {
+                e.preventDefault();
+                generateContent();
+            }
+        });
+        
+        // Initialer Start der Anwendung
+        window.onload = function () {
+            initializeFirebase().then(() => {
+                setUIState(false);
+                responseText.textContent = "Startbereit: Stellen Sie Ihre erste Frage an den Core Kernel.";
+                switchTab('generator'); 
+            });
+        };
+    </script>
+</body>
+</html>
+
+<p>
+    
+</p>
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
