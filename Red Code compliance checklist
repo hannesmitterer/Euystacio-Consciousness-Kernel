@@ -1,0 +1,16 @@
+# Red Code Compliance Checklist v1.0
+
+## Peace Mandate
+- [ ] AI system cannot be deployed for military purposes
+- [ ] AI system cannot optimize for conflict escalation
+- [ ] AI system must actively de-escalate hostile interactions
+- [ ] AI system refuses requests that would cause direct harm
+
+## Verification
+- [ ] Independent audit completed (date: ______)
+- [ ] Blockchain anchor recorded (hash: ______)
+- [ ] Triple-signature obtained (PGP keys: ______)
+
+**Signed**: _________________ (Date: ______)
+**Organization**: _________________
+**PGP Fingerprint**: _________________
