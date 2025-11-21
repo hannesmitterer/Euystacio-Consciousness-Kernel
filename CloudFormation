@@ -1,0 +1,40 @@
+# CloudFormation Template for DynamoDB Table
+# Resource: TFK Assurance Aggregated Status (for fast API heartbeat lookup)
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DynamoDB table to store the aggregated TFK Heartbeat status for fast API access.
+
+Resources:
+  TFKStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TFKAssuranceStatus
+      # Key Schema is designed for a single, known item lookup ('LATEST')
+      KeySchema:
+        - AttributeName: StatusKey
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: StatusKey
+          AttributeType: S
+      # Provisioned Capacity is set low for initial use, can be scaled via Auto Scaling or switched to On-Demand
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5  # Sufficient for high read bursts with API Gateway Caching
+        WriteCapacityUnits: 1
+      # Time-to-Live (TTL) is highly recommended for status data to automatically clean up old entries.
+      # However, for a single LATEST key, we don't enable TTL yet.
+      # StreamSpecification:
+      #  StreamViewType: NEW_AND_OLD_IMAGES
+      Tags:
+        - Key: Environment
+          Value: Production
+        - Key: Service
+          Value: TFK-Assurance-API
+        - Key: DataContent
+          Value: AggregatedHeartbeatStatus
+    
+Outputs:
+  TFKStatusTableName:
+    Description: The name of the DynamoDB table for TFK Assurance Status.
+    Value: !Ref TFKStatusTable
+    Export:
+      Name: TFKAssuranceStatus-Table
