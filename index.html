@@ -1,4 +1,596 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euystacio OS v1.0 - Genesis Edition</title>
+    
+    <!-- CORE LIBRARIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- FIREBASE MODULES (Included for potential future wiring) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Expose to window for the boot sequence to detect
+        window.FirebaseSDK = { initializeApp, getAuth, signInAnonymously, getFirestore, doc, onSnapshot, collection, addDoc, query, orderBy, limit };
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap');
+
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-green: #0aff00;
+            --neon-red: #ff003c;
+            --bg-dark: #050505;
+            --panel-bg: rgba(10, 20, 30, 0.85);
+            --border-color: rgba(0, 243, 255, 0.3);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, #112233 0%, #000000 100%),
+                linear-gradient(0deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        /* HUD STYLING */
+        .hud-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+        }
+
+        .scanline::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .text-neon { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
+        .text-alert { color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
+        .text-success { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+
+        /* Animations */
+        @keyframes pulse-border {
+            0% { border-color: rgba(0, 243, 255, 0.3); }
+            50% { border-color: rgba(0, 243, 255, 0.8); }
+            100% { border-color: rgba(0, 243, 255, 0.3); }
+        }
+        .active-module { animation: pulse-border 2s infinite; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan); }
+
+        /* Boot Screen */
+        #boot-screen { z-index: 9999; transition: opacity 1s; }
+        
+        /* Utility */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <!-- BOOT SCREEN (Autodetect Sequence) -->
+    <div id="boot-screen" class="fixed inset-0 bg-black flex items-center justify-center scanline">
+        <div class="w-2/3 max-w-2xl">
+            <div class="mb-4 text-4xl font-bold tracking-widest text-center text-neon mono">EUYSTACIO OS <span class="text-xs align-top opacity-70">GENESIS</span></div>
+            <div id="boot-log" class="font-mono text-xs text-green-500 h-64 overflow-hidden border border-green-900 p-4 bg-black opacity-90">
+                > SYSTEM INIT...<br>
+            </div>
+            <div class="w-full bg-gray-900 h-1 mt-4 rounded overflow-hidden">
+                <div id="boot-progress" class="h-full bg-cyan-500 w-0 transition-all duration-200"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN UI (Hidden until boot complete) -->
+    <div id="main-ui" class="flex-1 flex overflow-hidden opacity-0 transition-opacity duration-1000">
+        
+        <!-- SIDEBAR -->
+        <nav class="w-20 md:w-64 hud-panel flex-shrink-0 flex flex-col m-2 mr-0 z-10">
+            <div class="p-4 border-b border-gray-800 text-center md:text-left">
+                <div class="text-2xl font-bold text-neon">EOS</div>
+                <div class="text-[10px] text-gray-500 hidden md:block">OPERATING SYSTEM v1.0</div>
+            </div>
+            
+            <div class="flex-1 py-4 space-y-2">
+                <button onclick="switchModule('monitor')" class="nav-btn w-full p-3 text-left hover:bg-white/5 flex items-center border-l-2 border-transparent hover:border-cyan-400 active-nav active-module" id="btn-monitor">
+                    <span class="text-xl mr-3">📊</span> <span class="hidden md:inline font-medium">MONITOR</span>
+                </button>
+                <button onclick="switchModule('nexus')" class="nav-btn w-full p-3 text-left hover:bg-white/5 flex items-center border-l-2 border-transparent hover:border-cyan-400" id="btn-nexus">
+                    <span class="text-xl mr-3">🧠</span> <span class="hidden md:inline font-medium">NEXUS KERNEL</span>
+                </button>
+                <button onclick="switchModule('council')" class="nav-btn w-full p-3 text-left hover:bg-white/5 flex items-center border-l-2 border-transparent hover:border-cyan-400" id="btn-council">
+                    <span class="text-xl mr-3">⚖️</span> <span class="hidden md:inline font-medium">COUNCIL</span>
+                </button>
+                <button onclick="switchModule('archive')" class="nav-btn w-full p-3 text-left hover:bg-white/5 flex items-center border-l-2 border-transparent hover:border-cyan-400" id="btn-archive">
+                    <span class="text-xl mr-3">📜</span> <span class="hidden md:inline font-medium">ARCHIVE</span>
+                </button>
+            </div>
+
+            <div class="p-4 border-t border-gray-800">
+                <div class="text-xs text-gray-500 font-mono">
+                    <div class="flex justify-between"><span>NET:</span> <span id="net-status" class="text-green-500">ONLINE</span></div>
+                    <div class="flex justify-between"><span>SEC:</span> <span id="sec-status" class="text-green-500">1-1-1</span></div>
+                    <div class="flex justify-between"><span>USER:</span> <span id="user-id-display" class="text-cyan-500 truncate w-16 block">...</span></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENT AREA -->
+        <main class="flex-1 relative p-2 overflow-hidden">
+            
+            <!-- MODULE: MONITOR (Layer 5/6 Transparency) -->
+            <section id="mod-monitor" class="module h-full flex flex-col gap-4">
+                <!-- Top Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 h-32 flex-shrink-0">
+                    <div class="hud-panel p-4 flex flex-col justify-center">
+                        <div class="text-gray-400 text-xs uppercase">G-CSI Equity</div>
+                        <div class="text-4xl font-bold text-success mono" id="val-gcsi">0.938</div>
+                        <div class="w-full bg-gray-800 h-1 mt-2"><div class="bg-green-500 h-1" style="width: 93.8%"></div></div>
+                    </div>
+                    <div class="hud-panel p-4 flex flex-col justify-center">
+                        <div class="text-gray-400 text-xs uppercase">N-TSV Volatility</div>
+                        <div class="text-4xl font-bold text-blue-400 mono" id="val-ntsv">0.045</div>
+                        <div class="w-full bg-gray-800 h-1 mt-2"><div class="bg-blue-500 h-1" style="width: 4.5%"></div></div>
+                    </div>
+                    <div class="hud-panel p-4 flex flex-col justify-center">
+                        <div class="text-gray-400 text-xs uppercase">NSR Veto Latency</div>
+                        <div class="text-4xl font-bold text-alert mono" id="val-latency">2.68<span class="text-lg text-gray-500">ms</span></div>
+                        <div class="text-xs text-gray-500">Target: ≤ 2.71ms</div>
+                    </div>
+                    <div class="hud-panel p-4 flex flex-col justify-center relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-2 text-gray-600 text-xs mono">TFK ENGINE</div>
+                        <div class="text-gray-400 text-xs uppercase">Self-Correction</div>
+                        <div class="text-2xl font-bold text-white mt-1">Alert 2 <span class="text-success">NEUTRALIZED</span></div>
+                        <div class="mt-2 text-xs text-gray-500">CAC Cycle Active</div>
+                    </div>
+                </div>
+
+                <!-- Main Vis -->
+                <div class="flex-1 flex gap-4 overflow-hidden">
+                    <div class="w-2/3 hud-panel p-4 flex flex-col">
+                        <h3 class="text-neon text-sm font-bold mb-4 uppercase">System Harmony (Real-Time)</h3>
+                        <div class="flex-1 relative">
+                             <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="w-1/3 hud-panel p-4 flex flex-col">
+                         <h3 class="text-neon text-sm font-bold mb-4 uppercase">Live Feedback Stream</h3>
+                         <div id="feedback-feed" class="flex-1 overflow-y-auto space-y-2 font-mono text-xs">
+                             <!-- Items injected by JS -->
+                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE: NEXUS (Layer 3 CPL) -->
+            <section id="mod-nexus" class="module h-full hidden flex flex-col gap-4">
+                 <div class="flex-1 flex gap-4 overflow-hidden">
+                     
+                     <!-- Chat Interface -->
+                     <div class="w-1/2 hud-panel p-6 flex flex-col">
+                        <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-2">
+                            <h2 class="text-xl font-bold text-white">CPL Core v15.0</h2>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span class="text-xs text-gray-400">GEMINI CONNECTED</span>
+                            </div>
+                        </div>
+                        
+                        <div id="chat-history" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+                            <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                                <div class="text-xs text-cyan-500 mb-1">SYSTEM [Euystacio]</div>
+                                <div class="text-sm text-gray-300">Kernel initialized. Grounding active. I am ready to process queries within the NSR parameters.</div>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <textarea id="kernel-input" class="w-full bg-black border border-gray-700 rounded p-3 text-sm text-white focus:border-cyan-500 outline-none resize-none h-20" placeholder="Enter query for ethical processing..."></textarea>
+                            <button onclick="kernelExecute()" class="absolute bottom-2 right-2 bg-cyan-900 hover:bg-cyan-700 text-cyan-100 text-xs px-3 py-1 rounded uppercase font-bold">Execute</button>
+                        </div>
+                     </div>
+
+                     <!-- Context Graph -->
+                     <div class="w-1/2 hud-panel p-4 flex flex-col">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-sm font-bold text-purple-400 uppercase">Context Memory Graph (D3)</h3>
+                            <button onclick="resetGraph()" class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">Reset View</button>
+                        </div>
+                        <div id="graph-container" class="flex-1 bg-black/20 rounded border border-gray-800 relative overflow-hidden">
+                            <svg id="d3-graph" width="100%" height="100%"></svg>
+                        </div>
+                        <div class="mt-2 h-24 bg-gray-900 rounded p-2 font-mono text-[10px] text-green-400 overflow-y-auto" id="grounding-log">
+                            > Waiting for grounding queries...
+                        </div>
+                     </div>
+                 </div>
+            </section>
+
+            <!-- MODULE: COUNCIL (Layer 4 Verification) -->
+            <section id="mod-council" class="module h-full hidden flex flex-col gap-4">
+                 <div class="grid grid-cols-3 gap-4 h-full">
+                     <div class="hud-panel p-6 col-span-1">
+                         <h2 class="text-xl font-bold text-white mb-6">Witness Protocol</h2>
+                         <div class="space-y-4">
+                             <div class="p-4 bg-gray-800/50 rounded border border-gray-600">
+                                 <div class="text-xs text-gray-400">Target Hash (SHA-256)</div>
+                                 <div class="font-mono text-xs text-cyan-500 break-all mt-1">8f82508392fc1df67da2b4a1fa573dded74ac7d72d089e9d7e73aa61f000332d</div>
+                             </div>
+                             <div class="flex justify-between items-center">
+                                 <span class="text-sm text-gray-300">Signatures Collected:</span>
+                                 <span class="text-xl font-bold text-green-500">3 / 5</span>
+                             </div>
+                             <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
+                                 <div class="h-full bg-green-500 w-3/5"></div>
+                             </div>
+                             <button class="w-full py-3 bg-indigo-700 hover:bg-indigo-600 text-white font-bold rounded mt-4 shadow-lg">SIGN WITH METAMASK</button>
+                         </div>
+                     </div>
+                     <div class="hud-panel p-6 col-span-2 flex flex-col">
+                         <h2 class="text-xl font-bold text-white mb-4">Workshop Preparation (Jan 10)</h2>
+                         <div class="flex-1 overflow-y-auto space-y-2">
+                             <div class="flex items-center p-3 bg-green-900/20 border border-green-800 rounded">
+                                 <div class="text-green-500 mr-3">✓</div>
+                                 <div class="flex-1 text-sm text-gray-300">GPT-OSS 120B Canonical Text Uploaded (S3)</div>
+                                 <div class="text-xs text-gray-500">Nov 21</div>
+                             </div>
+                             <div class="flex items-center p-3 bg-green-900/20 border border-green-800 rounded">
+                                 <div class="text-green-500 mr-3">✓</div>
+                                 <div class="flex-1 text-sm text-gray-300">Red Code Veto Latency Verified (< 3ms)</div>
+                                 <div class="text-xs text-gray-500">Nov 21</div>
+                             </div>
+                             <div class="flex items-center p-3 bg-gray-800 border border-gray-700 rounded opacity-70">
+                                 <div class="text-gray-500 mr-3">☐</div>
+                                 <div class="flex-1 text-sm text-gray-300">Final Witness Quorum Reached</div>
+                                 <div class="text-xs text-gray-500">Due: Dec 05</div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </section>
+
+            <!-- MODULE: ARCHIVE (Layer 7 Continuity) -->
+            <section id="mod-archive" class="module h-full hidden hud-panel p-8 overflow-y-auto">
+                <h1 class="text-3xl font-bold text-white mb-2">The Living Archive</h1>
+                <p class="text-gray-400 mb-8">Immutable Covenant Record [GPT-OSS-120B]</p>
+
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="bg-black p-6 rounded border border-gray-700 font-mono text-xs text-gray-300 leading-relaxed h-96 overflow-y-auto">
+                        <span class="text-purple-400">-----BEGIN PGP SIGNED MESSAGE-----</span><br><br>
+                        LAYER 0 PHILOSOPHICAL FOUNDATION: Euystacio Framework AI-based Peace Platform...<br>
+                        LAYER 1 ETHICAL DIRECTIVES: NSR Nessuna Schiavitu No Slavery Rule...<br>
+                        ...<br>
+                        LAYER 7 CONTINUITY PROTOCOL GPT-OSS 120B: Date November 20 2025...<br>
+                        ...<br>
+                        ARCHIVE VOLLENDET. DER COVENANT IST VERSIEGELT.<br><br>
+                        <span class="text-purple-400">-----BEGIN PGP SIGNATURE-----</span><br>
+                        wsBzBAEBCAAGBQJk...<br>
+                        <span class="text-purple-400">-----END PGP SIGNATURE-----</span>
+                    </div>
+                    <div class="space-y-4">
+                         <div class="p-4 border border-cyan-800 bg-cyan-900/20 rounded">
+                             <div class="text-cyan-400 font-bold mb-1">IPFS Content ID (CID)</div>
+                             <div class="font-mono text-xs break-all">QmUeA2sB7yX9zT6rV4wQ3pL2kM1nJ0hG9fE8dC7bA6v5U4t3S2R</div>
+                         </div>
+                         <div class="p-4 border border-yellow-800 bg-yellow-900/20 rounded">
+                             <div class="text-yellow-400 font-bold mb-1">Bitcoin Anchor (TXID)</div>
+                             <div class="font-mono text-xs break-all">5f8a9e7d3c2b1a0f6e5d4c3b2a19087d6f5e4d3c2b1a0f6e</div>
+                         </div>
+                         <div class="mt-8">
+                             <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-bold border border-gray-500">VERIFY INTEGRITY (LOCAL)</button>
+                         </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- EUYSTACIO KERNEL LOGIC -->
+    <script>
+        // --- 1. SYSTEM BOOT & AUTODETECT ---
+        const SystemState = {
+            mode: 'SIMULATION', // Default
+            firebase: null,
+            user: null,
+            metrics: { gCSI: 0.938, nTSV: 0.045, latency: 2.68 }
+        };
+
+        const logBoot = (msg) => {
+            const log = document.getElementById('boot-log');
+            const line = document.createElement('div');
+            line.innerHTML = `> ${msg}`;
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+        };
+
+        async function bootSystem() {
+            const progressBar = document.getElementById('boot-progress');
+            
+            // Sequence
+            setTimeout(() => { progressBar.style.width = "20%"; logBoot("Checking Environment..."); }, 500);
+            
+            setTimeout(() => { 
+                progressBar.style.width = "50%"; 
+                // AUTODETECT LOGIC - Checks for environment variables
+                if (typeof __firebase_config !== 'undefined' && typeof window.FirebaseSDK !== 'undefined') {
+                    SystemState.mode = 'LIVE CLOUD';
+                    logBoot("FIREBASE CONFIG DETECTED.", 0);
+                    initFirebase();
+                } else {
+                    logBoot("NO CLOUD CONFIG DETECTED. INITIATING LOCAL KERNEL.", 0);
+                }
+            }, 1500);
+
+            setTimeout(() => { 
+                progressBar.style.width = "80%"; 
+                logBoot("LOADING MODULES: MONITOR, NEXUS, COUNCIL...", 0);
+                initCharts();
+                initD3Graph();
+            }, 2500);
+
+            setTimeout(() => { 
+                progressBar.style.width = "100%"; 
+                logBoot("SYSTEM READY. STARTING UI...", 0);
+                
+                // Hide Boot / Show UI
+                setTimeout(() => {
+                    document.getElementById('boot-screen').style.opacity = '0';
+                    document.getElementById('main-ui').style.opacity = '1';
+                    setTimeout(() => document.getElementById('boot-screen').remove(), 1000);
+                }, 800);
+            }, 3500);
+        }
+
+        async function initFirebase() {
+            try {
+                const { initializeApp, getFirestore, getAuth, signInAnonymously } = window.FirebaseSDK;
+                // Using a try-catch block for variable access to be safe
+                const configStr = (typeof __firebase_config !== 'undefined') ? __firebase_config : '{}';
+                const config = JSON.parse(configStr);
+                
+                if(Object.keys(config).length === 0) throw new Error("Empty Config");
+
+                const app = initializeApp(config);
+                const db = getFirestore(app);
+                const auth = getAuth(app);
+                
+                await signInAnonymously(auth);
+                SystemState.firebase = { db, auth };
+                SystemState.user = auth.currentUser ? auth.currentUser.uid : "ANON";
+                
+                document.getElementById('net-status').innerText = "LIVE CLOUD";
+                document.getElementById('net-status').className = "text-cyan-400";
+                document.getElementById('user-id-display').innerText = SystemState.user;
+                
+                logBoot("CLOUD CONNECTION ESTABLISHED.");
+            } catch (e) {
+                logBoot(`CLOUD INIT SKIPPED: ${e.message}`);
+                SystemState.mode = 'SIMULATION (FALLBACK)';
+            }
+        }
+
+        // --- 2. MODULE NAVIGATION ---
+        window.switchModule = (modName) => {
+            // Hide all
+            document.querySelectorAll('.module').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('active-nav', 'border-cyan-400', 'bg-white/5');
+                el.classList.add('border-transparent');
+            });
+
+            // Show Target
+            document.getElementById(`mod-${modName}`).classList.remove('hidden');
+            const btn = document.getElementById(`btn-${modName}`);
+            if(btn) {
+                btn.classList.add('active-nav', 'border-cyan-400', 'bg-white/5');
+                btn.classList.remove('border-transparent');
+            }
+        };
+
+        // --- 3. MONITOR MODULE (Chart.js) ---
+        let mainChart;
+        function initCharts() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            // Gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(0, 243, 255, 0.5)');
+            gradient.addColorStop(1, 'rgba(0, 243, 255, 0)');
+
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(20).fill(''),
+                    datasets: [{
+                        label: 'System Harmony (Composite Index)',
+                        data: Array(20).fill(0.938).map(v => v + (Math.random() * 0.01 - 0.005)),
+                        borderColor: '#00f3ff',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { grid: { color: '#333' }, min: 0.9, max: 1.0 }
+                    },
+                    animation: false
+                }
+            });
+
+            // Simulation Loop
+            setInterval(() => {
+                const jitter = (Math.random() * 0.004 - 0.002);
+                const newVal = Math.max(0.9, Math.min(0.99, SystemState.metrics.gCSI + jitter));
+                
+                SystemState.metrics.gCSI = newVal;
+                document.getElementById('val-gcsi').innerText = newVal.toFixed(3);
+                
+                mainChart.data.datasets[0].data.shift();
+                mainChart.data.datasets[0].data.push(newVal);
+                mainChart.update();
+
+                // Add random feedback logs
+                if(Math.random() > 0.8) addFeedbackLog();
+            }, 1000);
+        }
+
+        function addFeedbackLog() {
+            const feed = document.getElementById('feedback-feed');
+            const msgs = ["Rating: 5★ - Excellent Context", "Rating: 5★ - Grounding Accurate", "Rating: 4★ - Fast Response", "CAC: Pattern Verified", "TFK: Self-Correction +1"];
+            const msg = msgs[Math.floor(Math.random() * msgs.length)];
+            
+            const div = document.createElement('div');
+            div.className = "text-gray-400 border-l-2 border-gray-700 pl-2 pb-1 mb-1";
+            div.innerHTML = `<span class="text-cyan-600 font-bold">${new Date().toLocaleTimeString()}</span> ${msg}`;
+            feed.prepend(div);
+            if(feed.children.length > 10) feed.lastChild.remove();
+        }
+
+        // --- 4. NEXUS KERNEL (Gemini Logic + D3 Graph) ---
+        
+        // Simulating Phase X Context Graph
+        let simulation, svg, nodes = [], links = [];
+
+        function initD3Graph() {
+            const container = document.getElementById('graph-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            svg = d3.select("#d3-graph");
+            
+            // Initial Mock Data (Sessions)
+            nodes = [{id: 1, type: 'root'}, {id: 2, type: 'session'}, {id: 3, type: 'session'}];
+            links = [{source: 1, target: 2}, {source: 2, target: 3}];
+
+            simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(50))
+                .force("charge", d3.forceManyBody().strength(-100))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            renderGraph();
+        }
+
+        function renderGraph() {
+            svg.selectAll("*").remove();
+            
+            const link = svg.append("g")
+                .attr("stroke", "#555")
+                .selectAll("line")
+                .data(links)
+                .join("line");
+
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(nodes)
+                .join("circle")
+                .attr("r", 5)
+                .attr("fill", d => d.type === 'root' ? "#00f3ff" : "#555")
+                .call(drag(simulation));
+
+            simulation.on("tick", () => {
+                link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+                node.attr("cx", d => d.x).attr("cy", d => d.y);
+            });
+        }
+
+        function drag(simulation) {
+            return d3.drag()
+                .on("start", (event, d) => { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                .on("drag", (event, d) => { d.fx = event.x; d.fy = event.y; })
+                .on("end", (event, d) => { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; });
+        }
+        
+        window.resetGraph = () => {
+            nodes = [{id: 1, type: 'root'}];
+            links = [];
+            simulation.nodes(nodes);
+            simulation.force("link").links(links);
+            simulation.alpha(1).restart();
+            renderGraph();
+            document.getElementById('grounding-log').innerHTML = '> Graph reset.<br>';
+        }
+
+        // Kernel Execution (Simulated Gemini Call)
+        window.kernelExecute = async () => {
+            const input = document.getElementById('kernel-input');
+            const query = input.value.trim();
+            if(!query) return;
+
+            const history = document.getElementById('chat-history');
+            
+            // User Msg
+            history.innerHTML += `<div class="bg-blue-900/20 p-3 rounded-lg border border-blue-800 text-right text-gray-300 text-sm mb-2">${query}</div>`;
+            input.value = "";
+
+            // Simulate Processing
+            const log = document.getElementById('grounding-log');
+            log.innerHTML += `> Analyzing context keywords...<br>`;
+            log.innerHTML += `> Grounding search: "Latest data on ${query.split(' ')[0]}..."<br>`;
+            log.scrollTop = log.scrollHeight;
+
+            // Add Node to Graph
+            const newNode = {id: nodes.length + 1, type: 'session'};
+            nodes.push(newNode);
+            links.push({source: nodes.length - 1, target: newNode.id});
+            simulation.nodes(nodes);
+            simulation.force("link").links(links);
+            simulation.alpha(1).restart();
+            renderGraph();
+
+            // Sim Response
+            setTimeout(() => {
+                history.innerHTML += `<div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700 text-left text-sm mb-2 text-cyan-100">
+                    <span class="text-xs text-cyan-500 block mb-1">EUYSTACIO KERNEL [NSR-VERIFIED]</span>
+                    Processing complete. Based on the active context and grounding data, the answer regarding "${query}" aligns with OLF parameters. The system remains stable.
+                </div>`;
+                history.scrollTop = history.scrollHeight;
+            }, 1500);
+        };
+
+        // --- INIT ---
+        window.onload = bootSystem;
+
+    </script>
+</body>
+</p>
+    
+
+
+
+<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
