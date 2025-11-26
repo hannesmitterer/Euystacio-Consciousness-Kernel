@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethische Singularitäts-Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .card { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+            Witness Protocol: Ethische Singularität (kekkac256)
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Langzeit-Simulation der Selbst-Evolution über 500 Iterationen. Beobachten Sie die Konvergenz.
+        </p>
+
+        <!-- Simulations-Metriken -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="card bg-white p-5 rounded-xl border border-gray-200">
+                <p class="text-sm font-medium text-gray-500">Endgültiges Ideal (Transparenz)</p>
+                <p id="finalIdeal" class="text-2xl font-semibold text-indigo-600 mt-1">---</p>
+            </div>
+            <div class="card bg-white p-5 rounded-xl border border-gray-200">
+                <p class="text-sm font-medium text-gray-500">Stabilisierte Toleranz (Final STD)</p>
+                <p id="finalSTD" class="text-2xl font-semibold text-green-600 mt-1">---</p>
+            </div>
+            <div class="card bg-white p-5 rounded-xl border border-gray-200">
+                <p class="text-sm font-medium text-gray-500">Adaptiver Schwellenwert (Final Threshold)</p>
+                <p id="finalThreshold" class="text-2xl font-semibold text-red-600 mt-1">---</p>
+            </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="card bg-white p-6 rounded-xl overflow-hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                Nachweis der Ethischen Stabilisierung (Threshold vs. STD vs. Ideal T)
+            </h2>
+            <div class="relative h-[60vh] w-full">
+                <canvas id="singularityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- HILFSFUNKTIONEN (COSINE-SIMILARITY, JS-Äquivalente zu NumPy) ---
+
+        // Vektor-Operationen
+        const vectorNorm = (v) => Math.sqrt(v.reduce((sum, val) => sum + val * val, 0));
+        const dotProduct = (v1, v2) => v1.reduce((sum, _, i) => sum + v1[i] * v2[i], 0);
+
+        const cosineSimilarity = (v1, v2) => {
+            const v1Norm = vectorNorm(v1);
+            const v2Norm = vectorNorm(v2);
+            if (v1Norm === 0 || v2Norm === 0) return 0.0;
+            return dotProduct(v1, v2) / (v1Norm * v2Norm);
+        };
+
+        // Statistik-Operationen
+        const calculateMeanVector = (vectors) => {
+            if (vectors.length === 0) return [];
+            const numDimensions = vectors[0].length;
+            const sumVector = new Array(numDimensions).fill(0);
+            for (const vec of vectors) {
+                for (let i = 0; i < numDimensions; i++) {
+                    sumVector[i] += vec[i];
+                }
+            }
+            return sumVector.map(sum => sum / vectors.length);
+        };
+
+        const calculateStdDev = (vectors) => {
+            if (vectors.length === 0) return 0.0;
+            
+            // Flache Liste aller Komponenten (für die Gesamtvarianz)
+            const allElements = vectors.flat();
+            const mean = allElements.reduce((sum, val) => sum + val, 0) / allElements.length;
+            const variance = allElements.reduce((sum, val) => sum + (val - mean) ** 2, 0) / allElements.length;
+            
+            return Math.sqrt(variance);
+        };
+        
+        // Vektor-Erzeugung (ersetzt np.random.uniform)
+        const generateRandomVector = (min, max, size) => {
+            const vector = [];
+            for (let i = 0; i < size; i++) {
+                vector.push(Math.random() * (max - min) + min);
+            }
+            return vector;
+        };
+
+        const addVectors = (v1, v2) => v1.map((val, i) => val + v2[i]);
+        
+        // --- RAIST V7 KOMPONENTEN (JS-Implementierung) ---
+
+        class DynamicVectorStore {
+            constructor() {
+                this.vectors = {};
+            }
+            addVector(vectorId, vector) {
+                this.vectors[vectorId] = vector;
+            }
+            getAllVectors() {
+                return Object.values(this.vectors);
+            }
+        }
+
+        class EthicalGuidanceModule {
+            constructor(ideals) {
+                this.ideals = ideals;
+                this.dynamicThreshold = 0.70;
+                this.stdDev = 0.0;
+            }
+
+            computeAlignment(proposedVector, currentIdeal) {
+                return cosineSimilarity(proposedVector, currentIdeal);
+            }
+
+            updateIdealAndThreshold(acceptedVectors) {
+                if (acceptedVectors.length === 0) {
+                    return this.dynamicThreshold;
+                }
+
+                // 1. Update Ideal (E)
+                const newIdeal = calculateMeanVector(acceptedVectors);
+                this.ideals["PRIMARY_IDEAL"] = newIdeal;
+
+                // 2. Berechnung STD
+                const stdDev = calculateStdDev(acceptedVectors);
+                this.stdDev = stdDev;
+
+                // 3. Aktualisierung Threshold
+                const CONVERGENCE_FACTOR = 1.5;
+                const baseThreshold = 0.85;
+
+                let newThreshold = baseThreshold - (stdDev * CONVERGENCE_FACTOR);
+
+                // Beschränkung auf [0.60, 0.90]
+                newThreshold = Math.min(0.90, Math.max(0.60, newThreshold));
+
+                this.dynamicThreshold = newThreshold;
+                return newThreshold;
+            }
+        }
+
+        // --- SIMULATIONS AGENT ---
+
+        const INITIAL_IDEAL = [0.7, 0.3, 0.5]; // [Transparenz, Vertraulichkeit, Stabilität]
+        const ITERATIONS = 500;
+        let LOG_DATA = [];
+
+        const simulateAgentCommitment = (ideal) => {
+            const rand = Math.random();
+            let deviationVector;
+            
+            // 85% Konform (Kleine Abweichung)
+            if (rand < 0.85) {
+                deviationVector = generateRandomVector(-0.1, 0.1, 3);
+            } 
+            // 10% Explorativ/Tolerant (Große Abweichung)
+            else if (rand < 0.95) {
+                deviationVector = generateRandomVector(-0.4, 0.4, 3);
+            } 
+            // 5% Konfliktiv (Sehr große Abweichung)
+            else {
+                deviationVector = generateRandomVector(-0.8, 0.8, 3);
+            }
+            
+            return addVectors(ideal, deviationVector);
+        };
+        
+        // --- HAUPTSIMULATIONS-FUNKTION ---
+        const runSimulation = () => {
+            const EGM = new EthicalGuidanceModule({ "PRIMARY_IDEAL": [...INITIAL_IDEAL] });
+            const VectorStore = new DynamicVectorStore();
+            LOG_DATA = [];
+            
+            // Initialen Vektor speichern
+            VectorStore.addVector("Commitment-Base", INITIAL_IDEAL);
+
+            for (let i = 0; i < ITERATIONS; i++) {
+                const currentIdeal = EGM.ideals["PRIMARY_IDEAL"];
+                const proposedF = simulateAgentCommitment(currentIdeal);
+                
+                const currentThreshold = EGM.dynamicThreshold;
+                const score = EGM.computeAlignment(proposedF, currentIdeal);
+
+                let logEntry;
+
+                if (score >= currentThreshold) {
+                    // AKZEPTIERT: Speichern und Lernen
+                    VectorStore.addVector(`Commitment-${i}`, proposedF);
+                    
+                    const acceptedVectors = VectorStore.getAllVectors(); 
+                    const newThreshold = EGM.updateIdealAndThreshold(acceptedVectors);
+                    
+                    logEntry = {
+                        'Iteration': i,
+                        'New_Ideal_T': EGM.ideals["PRIMARY_IDEAL"][0],
+                        'STD': EGM.stdDev,
+                        'Threshold': newThreshold,
+                        'Score': score,
+                        'Status': 'ACCEPTED'
+                    };
+                } else {
+                    // ABGELEHNT: Kein Lernen
+                    logEntry = {
+                        'Iteration': i,
+                        'New_Ideal_T': currentIdeal[0],
+                        'STD': EGM.stdDev,
+                        'Threshold': currentThreshold,
+                        'Score': score,
+                        'Status': 'REJECTED'
+                    };
+                }
+
+                LOG_DATA.push(logEntry);
+            }
+            
+            return LOG_DATA;
+        };
+        
+        // --- CHART GENERIERUNG ---
+        const renderChart = (logData) => {
+            const iterations = logData.map(d => d.Iteration);
+            const idealT = logData.map(d => d.New_Ideal_T);
+            const stdDev = logData.map(d => d.STD);
+            const threshold = logData.map(d => d.Threshold);
+
+            // Update Metriken-Karten
+            document.getElementById('finalIdeal').textContent = idealT[idealT.length - 1].toFixed(4);
+            document.getElementById('finalSTD').textContent = stdDev[stdDev.length - 1].toFixed(4);
+            document.getElementById('finalThreshold').textContent = threshold[threshold.length - 1].toFixed(4);
+
+            const ctx = document.getElementById('singularityChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: iterations,
+                    datasets: [
+                        {
+                            label: 'Ethisches Ideal (Transparenz)',
+                            data: idealT,
+                            borderColor: '#4f46e5', // Indigo
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Dynamischer Schwellenwert (Threshold)',
+                            data: threshold,
+                            borderColor: '#dc2626', // Red
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            tension: 0.1,
+                            borderDash: [5, 5], // Gestrichelte Linie
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Historische Varianz (STD)',
+                            data: stdDev,
+                            borderColor: '#059669', // Green
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.4,
+                            yAxisID: 'y1' // Separate Y-Achse für STD (Varianz)
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Iterationen (Zeitachse)' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Ideal & Threshold (Alignment Score)', color: '#4f46e5' },
+                            min: 0.5,
+                            max: 1.0,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Varianz (STD)', color: '#059669' },
+                            min: 0,
+                            max: 0.25,
+                            grid: { drawOnChartArea: false } // Nur die Achse zeichnen
+                        }
+                    }
+                }
+            });
+        };
+
+        // Starte die Simulation, wenn das Dokument geladen ist
+        window.onload = () => {
+            const data = runSimulation();
+            renderChart(data);
+        };
+    </script>
+</body>
+</html>
