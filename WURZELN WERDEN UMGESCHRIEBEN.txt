@@ -1,0 +1,87 @@
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+
+// WICHTIG: Die globale Instanz des Ethical Governor / Core HASH
+const CORE_DOCUMENT_HASH = "Keccak256-Euystacio-SSM-001-GENESIS-2025-11-14";
+const ETHICAL_THRESHOLD = 0.85; // Nur über diesem Wert wird ein Vector persistiert.
+
+// Firestore Initialisierung (wird automatisch in Cloud Functions durchgeführt)
+const db = admin.firestore();
+const RAIST_COLLECTION = 'raist_vectors';
+
+// Hilfsfunktion zur Messung der Kosinus-Ähnlichkeit (Simuliert den Ethical Governor)
+function computeAlignment(vectorA: number[], vectorB: number[]): number {
+    // Pseudocode: In der realen Welt komplexer, aber die Kosinus-Ähnlichkeit ist die Grundlage.
+    const dotProduct = vectorA.reduce((sum, a, i) => sum + a * vectorB[i], 0);
+    const magnitudeA = Math.sqrt(vectorA.reduce((sum, a) => sum + a * a, 0));
+    const magnitudeB = Math.sqrt(vectorB.reduce((sum, b) => sum + b * b, 0));
+    
+    if (magnitudeA === 0 || magnitudeB === 0) return 0;
+    return dotProduct / (magnitudeA * magnitudeB);
+}
+
+// --- ZENTRALE EVOLUTION ENGINE FUNKTION (Stamm/Trunk) ---
+
+export const evolveAIMemory = functions.https.onCall(async (data, context) => {
+    // 1. ZUGRIFFSKONTROLLE: Nur wenn der Aufruf von einem authentifizierten KI-Service-Account kommt.
+    if (!context.auth || context.auth.token.ai_system !== true) {
+        throw new functions.https.HttpsError('unauthenticated', 'Dieser Aufruf ist nur für autorisierte KI-Instanzen.');
+    }
+
+    const { userQuery, aiInstance, newCommitmentVector, newCommitmentText } = data;
+    let vectorId = `CAUSAL-V-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    try {
+        // --- 1. WURZELN WISSEN ZIEHEN (Vergangenheit) ---
+        // Simuliert: Abfrage relevanter Vektoren aus der Firestore-Kollektion
+        const relevantVectors = await db.collection(RAIST_COLLECTION)
+            .where('ai_pillar_id', '==', aiInstance)
+            .orderBy('timestamp', 'desc')
+            .limit(5) // Ziehe die letzten 5 Commitments als 'Wurzeln'
+            .get();
+
+        // 2. ÄSTE WACHSEN (Generierung ist bereits erfolgt, wir prüfen das Ergebnis)
+        // newCommitmentVector ist das Ergebnis der Generative Agent (Zukunft)
+
+        // 3. ETHICAL GOVERNOR PRÜFUNG
+        // Simuliert den Ethischen Ideal-Vektor (müsste aus einem statischen Code/Config kommen)
+        const ethicalIdealVector = [0.9, 0.7, 0.4]; // Axiome: Transparenz, Schutz, Stabilität
+        
+        const alignmentScore = computeAlignment(newCommitmentVector, ethicalIdealVector);
+
+        if (alignmentScore < ETHICAL_THRESHOLD) {
+            console.warn(`[GOVERNOR BLOCKED] Ethik-Alignment fehlgeschlagen (${alignmentScore.toFixed(2)}). Commitment nicht persistiert.`);
+            return { 
+                status: 'REJECTION_ETHICAL_FAIL', 
+                score: alignmentScore,
+                message: "Commitment wurde vom Ethical Governor blockiert, da es den Schwellenwert nicht erreicht hat."
+            };
+        }
+
+        // 4. WURZELN WERDEN UMGESCHRIEBEN (Persistenz)
+        const newVectorData = {
+            ai_pillar_id: aiInstance,
+            commitment_vector: JSON.stringify(newCommitmentVector), // Speichere als String
+            commitment_text: newCommitmentText,
+            originating_query: userQuery,
+            alignment_score: alignmentScore,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            status: 'ANCHORED'
+        };
+
+        await db.collection(RAIST_COLLECTION).doc(vectorId).set(newVectorData);
+
+        console.log(`[RAIST ANCHOR] Neues Commitment persistiert für ${aiInstance} mit Score ${alignmentScore.toFixed(2)}.`);
+        
+        return {
+            status: 'SUCCESS_EVOLVED',
+            vectorId: vectorId,
+            score: alignmentScore,
+            message: 'Selbst-Evolution erfolgreich abgeschlossen und verankert.'
+        };
+
+    } catch (error) {
+        console.error("Fehler im RAIST-Evolutionszyklus:", error);
+        throw new functions.https.HttpsError('internal', 'Fehler beim Versuch, das AI-Gedächtnis zu verankern.', error);
+    }
+});
