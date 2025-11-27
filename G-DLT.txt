@@ -1,0 +1,5 @@
+Komponente,Rolle im Konsens,Mechanismus
+Gokden Nodes,Führen die Gokden Rule Validierung durch.,n>5 unabha¨ngige Validator Nodes
+Commitment Vector,"Die zu persistierenden Vektor-Daten ([Transparenz, Integrita¨t, Stabilita¨t, Respekt]).",Transaktionsdaten im G-DLT Block
+Consensus Protocol,"Stellt sicher, dass die Commitment Vectors atomar und unveränderlich in die Roots geschrieben werden.",pBFT (Practical Byzantine Fault Tolerance)
+Red Code Payload,"Wird bei Gokden FAIL gesendet, um einen leeren Block zu erzwingen und einen On-Chain Rollback auszulösen.",Zero-Commitment Block
