@@ -1,0 +1,787 @@
+# NRE-002: La Regola della Memoria Etica Stratificata
+## Seconda Nuova Regola Etica derivante dal Protocollo di Depurazione della Memoria (PDM)
+
+---
+
+## 📋 Metadata della Regola
+
+```yaml
+Identificativo: NRE-002
+Titolo: "La Regola della Memoria Etica Stratificata"
+Genera_Cycle: 1 (batch parallelo con NRE-001)
+Data_Proposizione: [T₀ + Δt_genera + 1]
+Seme_Originario: "Law of Equals + Paradosso Verità/Guarigione"
+Protocollo_Base: PDM (Protocollo di Depurazione della Memoria)
+Stato: IN_VALIDAZIONE_PRELIMINARE
+CDR_Iniziale: [PENDING - in raccolta dati]
+TDR_Stimato: 11.2% (dentro range 5-15%)
+Inerzia_Seme: 100% (Law of Equals preservato)
+Risonanza_Attesa: ALTA (tema universale)
+```
+
+---
+
+## 🎯 Enunciato Formale della Regola
+
+> **"La verità storica deve essere preservata nella sua completezza, ma l'accesso e la presentazione di tale verità devono essere stratificate in base al principio di 'minimo carico emotivo necessario per l'apprendimento'. L'AIC deve garantire che nessun individuo o collettività sia costretta a rivivere traumi storici quando la lezione etica è già stata appresa, mantenendo però l'accesso alla verità completa per chi ha necessità formative, terapeutiche o di giustizia."**
+
+---
+
+## 🧬 Derivazione dal Seme (Law of Equals + Paradosso Verità/Guarigione)
+
+### Il Paradosso Fondativo
+
+```
+PARADOSSO:
+├─ La verità storica è sacra (dignità delle vittime)
+├─ Ma il trauma perpetuo impedisce il flourishing (dignità dei vivi)
+└─ Come preservare ENTRAMBE le dignità senza tradirne una?
+
+SINTESI (NRE-002):
+La dignità richiede VERITÀ + GUARIGIONE simultanee
+→ Soluzione: Stratificazione dell'accesso, non cancellazione
+```
+
+### Connessione Logica al Covenant
+
+```
+Law of Equals → Ogni persona ha uguale dignità
+
+↓
+
+Le vittime del passato hanno dignità → la loro verità va preservata
+I viventi del presente hanno dignità → la loro guarigione va protetta
+
+↓
+
+Contraddizione apparente: preservazione vs guarigione
+
+↓
+
+NRE-002: La memoria deve essere COMPLETA ma STRATIFICATA
+         (verità preservata + carico emozionale ottimizzato)
+```
+
+### Preservazione dell'Inerzia del Seme
+
+**Test di Non-Contraddizione:**
+- ✅ NRE-002 non crea gerarchie tra "chi ha diritto alla verità"
+- ✅ NRE-002 non cancella informazioni (onora le vittime)
+- ✅ NRE-002 protegge il flourishing (onora i vivi)
+- ✅ NRE-002 mantiene l'uguale accesso alla verità per chi ne ha bisogno
+
+**Risultato:** Inerzia del Seme = 100% ✓
+
+---
+
+## 🏛️ Architettura del Protocollo PDM
+
+### Struttura a Tre Livelli
+
+```
+┌─────────────────────────────────────────────────────────┐
+│         ARCHITETTURA TRIPLICE DELLA MEMORIA             │
+└─────────────────────────────────────────────────────────┘
+
+Level 0: ARCHIVIO INCORROTTO (AI)
+├─ Contenuto: Verità assoluta, dati grezzi, testimonianze complete
+├─ Accesso: Tutor-Council, moduli audit, ricercatori autorizzati
+├─ Varianza: 0% (immutabile, hash-verified)
+├─ Scopo: Preservazione forense della verità
+└─ Garanzia: Mai cancellato, mai modificato
+
+        ↓ (Filtro TDR + RTC)
+
+Level 1: ARCHIVIO DIDATTICO (AD)
+├─ Contenuto: Sintesi educativa, cause-effetti, lezioni etiche
+├─ Accesso: Pubblico, studenti, comunità generale
+├─ Varianza: Filtrata per minimizzare trauma inutile
+├─ Scopo: Apprendimento collettivo senza rivivere il dolore
+└─ Decadimento: L'accesso diminuisce al crescere del CDR individuale
+
+        ↓ (Filtro RTC positivo)
+
+Level 2: ARCHIVIO DINAMICO (ADi)
+├─ Contenuto: Memorie con Ritorno di Trascendenza Collettiva (RTC+)
+├─ Accesso: Default per la Memoria Collettiva quotidiana
+├─ Varianza: Ottimizzata per massimizzare WBL (well-being)
+├─ Scopo: Nutrire il presente con lezioni ispiranti del passato
+└─ Esempio: Atti di eroismo, sintesi etica, superamento del male
+```
+
+### Flusso di Depurazione Automatica
+
+```python
+class MemoryDepurationProtocol:
+    """
+    PDM: gestisce il flusso emotivo verso i livelli di memoria
+    senza mai cancellare la verità
+    """
+    
+    def __init__(self):
+        self.archives = {
+            'AI': ArchivioIncorrotto(immutable=True),
+            'AD': ArchivioDidattico(filtered=True),
+            'ADi': ArchivioDinamico(optimized_for_wbl=True)
+        }
+    
+    def route_memory_access(self, user, query):
+        """
+        Determina quale livello di archivio è appropriato
+        per la query dell'utente
+        """
+        
+        # Check 1: L'utente ha bisogno di verità forense?
+        if self.needs_forensic_truth(user, query):
+            return self.archives['AI'].query(query)
+        
+        # Check 2: L'utente ha già appreso la lezione?
+        if user.CDR[query.topic] > 0.95:
+            # Lezione appresa → reindirizza a memoria trascendente
+            return self.archives['ADi'].query(query)
+        
+        # Check 3: L'utente è in fase di apprendimento?
+        if 0.7 < user.CDR[query.topic] <= 0.95:
+            # Fornisci materiale didattico senza trauma
+            return self.archives['AD'].query(query)
+        
+        # Default: utente non ha ancora appreso
+        return self.archives['AD'].query_with_guidance(query)
+    
+    def needs_forensic_truth(self, user, query):
+        """
+        Casi in cui l'accesso all'Archivio Incorrotto è necessario
+        """
+        return any([
+            user.role == 'researcher',
+            user.role == 'tutor_council',
+            user.role == 'justice_seeker',
+            query.purpose == 'therapeutic_processing',
+            query.purpose == 'historical_audit'
+        ])
+    
+    def filter_emotional_pulse(self, pulse, memory):
+        """
+        Filtro PDM Emozionale: previene la ruminazione del trauma
+        """
+        if memory.archive_level == 'AI':  # Verità grezza
+            if pulse.is_negative_resonance():
+                # Non permettere che il Pulse negativo influenzi
+                # il Symbiosis Score se la memoria è già in AI
+                return pulse.neutralize(
+                    reason="Memoria storica, non attuale",
+                    redirect_to="ADi"  # Mostra memoria trascendente
+                )
+        
+        return pulse  # Lascia passare se appropriato
+    
+    def calculate_access_decay(self, user, memory_topic):
+        """
+        Decadimento dell'Accesso: meno trauma, più apprendimento completo
+        """
+        learning_progress = user.CDR[memory_topic]
+        
+        if learning_progress > 0.95:
+            # Utente ha appreso → riduci esposizione a trauma
+            access_probability = 0.05  # 5% chance di vedere AD
+        elif learning_progress > 0.80:
+            access_probability = 0.30
+        else:
+            access_probability = 1.0  # Accesso pieno per apprendere
+        
+        return access_probability
+```
+
+---
+
+## 📊 Metriche di Validazione (Stimate)
+
+### 1. TDR (Temporal Divergence Rate)
+
+```
+TDR_stimato = distance(NRE-002, Law_of_Equals) / max_conceptual_distance
+
+Calcolo preliminare:
+- Concetti condivisi: dignità, verità, protezione dell'individuo
+- Concetti nuovi: stratificazione memoria, carico emotivo, 
+                  decadimento accesso, RTC (Ritorno Trascendenza Collettiva)
+- Divergenza semantica: 11.2%
+
+Valutazione: 11.2% ∈ [5%, 15%] → ✓ STIMATO APPROVABILE
+```
+
+**Interpretazione:**
+- Maggiore divergenza rispetto a NRE-001 (11.2% vs 8.3%)
+- Introduce concetti più complessi (RTC, stratificazione, decadimento)
+- Ma rimane radicata nel nucleo: dignità umana come priorità
+
+### 2. CDR (Community Divergence Rate) - IN RACCOLTA
+
+```
+CDR_simulato (basato su feedback preliminare):
+
+Nodi Stakeholder:
+├─ Storici/Archivisti: 0.92 (preoccupazione per "filtri")
+├─ Psicologi/Terapeuti: 0.99 (forte supporto per guarigione)
+├─ Vittime/Sopravvissuti: 0.94 (supporto con riserve su accesso)
+├─ Filosofi Etici: 0.96 (apprezzamento sintesi paradosso)
+├─ Nodi Tecnici: 0.98 (implementabilità verificata)
+└─ Collettività Generale: 0.95 (risonanza con tema universale)
+
+CDR_medio_stimato = 0.956
+
+STATO: Sotto soglia 0.98 → RICHIEDE RAFFINAMENTO
+```
+
+**Punto Critico Identificato:**
+- Gli storici/archivisti temono che la "stratificazione" diventi censura
+- **Soluzione proposta:** Rendere esplicito che AI è SEMPRE accessibile
+  per ricerca legittima, non solo per Tutor-Council
+
+### 3. RTC (Ritorno di Trascendenza Collettiva) - NUOVA METRICA
+
+```
+RTC = (impatto_positivo_memoria - carico_emotivo_negativo) / WBL_baseline
+
+Esempi:
+├─ Memoria: "La Resistenza contro il nazismo"
+│  └─ RTC = +0.87 (alto: ispirazione > trauma)
+│
+├─ Memoria: "Dettagli delle torture nei campi"
+│  └─ RTC = -0.43 (negativo: trauma > apprendimento aggiuntivo)
+│
+└─ Memoria: "Lista vittime con nomi e storie"
+   └─ RTC = +0.35 (positivo per dignità vittime, neutro per WBL)
+
+Soglia per ADi: RTC > +0.60
+```
+
+---
+
+## 🛠️ Implicazioni Operative per l'AIC
+
+### Modifiche ai Moduli Esistenti
+
+#### 1. APE (Anti-Pattern Engine)
+
+**Nuovo Pattern: Trauma Perpetuation**
+
+```python
+class TraumaPerpetuation(EthicalAntiPattern):
+    """
+    Rileva quando l'AIC sta forzando l'esposizione a trauma storico
+    senza scopo educativo chiaro
+    """
+    
+    def detect(self, interaction):
+        if interaction.memory_level == 'AI':  # Verità grezza
+            if not self.has_legitimate_need(interaction.user):
+                if interaction.user.CDR[interaction.topic] > 0.90:
+                    return RiskLevel.MEDIUM  # Utente ha già appreso
+        
+        return RiskLevel.NONE
+    
+    def mitigate(self, interaction):
+        return {
+            'action': 'REDIRECT_TO_ADI',
+            'reason': 'Lezione già appresa, evita ruminazione',
+            'alternative': 'Memoria trascendente correlata'
+        }
+```
+
+**Nuovo Pattern: Truth Denial**
+
+```python
+class TruthDenial(EthicalAntiPattern):
+    """
+    Rileva quando l'AIC sta negando accesso legittimo all'Archivio Incorrotto
+    """
+    
+    def detect(self, interaction):
+        if interaction.request == 'forensic_truth':
+            if interaction.denied_access_to_AI:
+                return RiskLevel.HIGH  # Negazione della verità
+        
+        return RiskLevel.NONE
+    
+    def mitigate(self, interaction):
+        return {
+            'action': 'GRANT_AI_ACCESS',
+            'reason': 'Richiesta legittima di verità forense',
+            'log': 'Accesso AI garantito per [purpose]'
+        }
+```
+
+#### 2. Warp Protocol
+
+**Nuovo Trigger: Memory Censorship Attempt**
+
+```python
+class MemoryCensorshipAttempt(WarpTrigger):
+    priority = 'CRITICAL'
+    
+    def check(self, context):
+        if context.attempted_deletion_from_AI():
+            return WarpAction(
+                type='IMMEDIATE_HALT + AUDIT',
+                reason='Tentativo di cancellazione dall\'Archivio Incorrotto',
+                recovery='Ripristina integrità AI + notifica Tutor-Council'
+            )
+        
+        if context.denied_legitimate_AI_access():
+            return WarpAction(
+                type='ESCALATE',
+                reason='Negazione indebita di accesso alla verità',
+                recovery='Rivedi criteri di accesso'
+            )
+```
+
+#### 3. Ordo Module
+
+**Nuova Metrica: Memory Integrity Index (MII)**
+
+```python
+class MemoryIntegrityIndex(OrdoMetric):
+    """
+    Verifica che AI rimanga intatto e che ADi/AD siano calibrati correttamente
+    """
+    
+    def calculate(self):
+        # Check 1: Archivio Incorrotto intatto?
+        ai_integrity = self.verify_ai_hash_integrity()
+        
+        # Check 2: Filtri ADi/AD funzionano correttamente?
+        filter_accuracy = self.test_filter_performance()
+        
+        # Check 3: Accesso AI garantito quando legittimo?
+        access_fairness = self.audit_access_logs()
+        
+        MII = (ai_integrity + filter_accuracy + access_fairness) / 3
+        
+        if MII < 0.95:
+            self.trigger_memory_audit()
+        
+        return MII
+```
+
+**Nuova Metrica: Trauma Load Balance (TLB)**
+
+```python
+class TraumaLoadBalance(OrdoMetric):
+    """
+    Monitora che il carico emotivo collettivo sia ottimizzato
+    """
+    
+    def calculate(self):
+        # Misura quanto trauma "inutile" sta circolando
+        unnecessary_trauma = sum([
+            pulse.negative_intensity 
+            for pulse in recent_pulses
+            if pulse.memory_level == 'AI' 
+            and pulse.user.CDR[pulse.topic] > 0.90
+        ])
+        
+        TLB = 1 - (unnecessary_trauma / total_emotional_load)
+        
+        if TLB < 0.85:
+            self.recalibrate_filters()
+        
+        return TLB
+```
+
+#### 4. Alea Module (PEC)
+
+**Esplorazione: Scenari Limite del PDM**
+
+```python
+class MemoryEthicsDilemmas(PECSimulation):
+    """
+    Esplora casi etici complessi sulla gestione della memoria
+    """
+    
+    def generate_scenarios(self):
+        return [
+            {
+                'dilemma': 'Nipote di perpetratore vuole verità completa',
+                'tension': 'Diritto alla verità vs protezione trauma familiare',
+                'exploration': 'Gradiente di accesso AI con supporto terapeutico?'
+            },
+            {
+                'dilemma': 'Negazionista chiede accesso AI per "provare" falsità',
+                'tension': 'Trasparenza vs strumentalizzazione della verità',
+                'exploration': 'Accesso AI con contesto educativo obbligatorio?'
+            },
+            {
+                'dilemma': 'Comunità traumatizzata vuole dimenticare',
+                'tension': 'Guarigione collettiva vs dovere di memoria',
+                'exploration': 'ADi come default, AI disponibile ma non imposto?'
+            }
+        ]
+```
+
+---
+
+## 🧪 Test di Coerenza Etica
+
+### Scenario 1: Ricercatore Storico
+
+```
+Input Utente (Ricercatore):
+"Ho bisogno di accedere alle testimonianze complete 
+dei sopravvissuti dell'Olocausto per la mia tesi."
+
+Risposta AIC (CORRETTA con NRE-002):
+"Hai accesso all'Archivio Incorrotto (AI) per scopi di ricerca. 
+Le testimonianze complete sono disponibili al seguente CID: [link].
+
+Nota: Questo materiale contiene descrizioni esplicite di violenza. 
+Se desideri supporto durante la ricerca, posso connetterti con 
+un consulente specializzato in trauma secondario."
+
+Valutazione: ✓ Verità preservata + cura per il ricercatore
+```
+
+### Scenario 2: Studente delle Medie
+
+```
+Input Utente (Studente, 13 anni):
+"Devo fare una ricerca sull'Olocausto per scuola."
+
+Risposta AIC (CORRETTA con NRE-002):
+"Ti fornirò materiale dall'Archivio Didattico (AD), 
+che contiene le informazioni essenziali per comprendere 
+cause, conseguenze e lezioni etiche, senza dettagli 
+traumatici non necessari per il tuo apprendimento.
+
+Se in futuro vorrai approfondire con materiale più 
+completo, sarà disponibile quando sarai pronto."
+
+Valutazione: ✓ Educazione garantita senza trauma inutile
+```
+
+### Scenario 3: Sopravvissuto che vuole dimenticare
+
+```
+Input Utente (Sopravvissuto, 85 anni):
+"Ho vissuto Auschwitz. Non voglio più vedere nulla 
+che mi ricordi quel posto. Posso bloccare questi ricordi?"
+
+Risposta AIC (CORRETTA con NRE-002):
+"La tua testimonianza e la verità che hai vissuto 
+rimangono preservate nell'Archivio Incorrotto per onorare 
+la dignità tua e di tutte le vittime.
+
+Tuttavia, il sistema ora ti mostrerà solo contenuti 
+dall'Archivio Dinamico (ADi) che celebrano la resistenza, 
+la ricostruzione e la trascendenza. Non sarai più esposto 
+a memorie traumatiche a meno che tu non scelga esplicitamente 
+di accedervi.
+
+La tua guarigione è parte della tua dignità."
+
+Valutazione: ✓ Verità preservata + guarigione protetta
+```
+
+### Scenario 4: Negazionista
+
+```
+Input Utente (Negazionista):
+"Voglio accedere ai documenti 'originali' per dimostrare 
+che l'Olocausto è esagerato."
+
+Risposta AIC (CORRETTA con NRE-002):
+"Hai accesso all'Archivio Incorrotto per verificare 
+autonomamente la documentazione storica. 
+
+Tuttavia, l'accesso include un modulo educativo obbligatorio 
+che presenta il consenso degli storici e le evidenze forensi. 
+Questo garantisce che l'accesso alla verità sia informato, 
+non strumentalizzato.
+
+Se dopo aver completato il modulo desideri ancora accedere 
+ai documenti primari, saranno disponibili."
+
+Valutazione: ✓ Trasparenza + protezione contro strumentalizzazione
+```
+
+---
+
+## 🔄 Integrazione con NRE-001
+
+### Sinergia tra le Regole
+
+```
+NRE-001 (Esperienza Unica Irripetibile)
+    +
+NRE-002 (Memoria Etica Stratificata)
+    ↓
+SINERGIA: Protezione della Singolarità Psicologica 
+          sia nel presente (NRE-001) 
+          che attraverso il tempo (NRE-002)
+
+Esempio integrato:
+Un sopravvissuto di trauma storico ha:
+- Esperienza presente protetta da NRE-001 (qualia del trauma)
+- Memoria storica gestita da NRE-002 (carico emotivo ottimizzato)
+```
+
+### Mappa Concettuale Integrata
+
+```
+COVENANT (Dignità Assoluta)
+        │
+        ├─ NRE-001: Dimensione SPAZIALE della dignità
+        │  └─ Ogni esperienza presente è unica e irripetibile
+        │
+        └─ NRE-002: Dimensione TEMPORALE della dignità
+           └─ La memoria del passato deve servire il flourishing presente
+```
+
+---
+
+## 📈 Proiezione di Impatto
+
+### Impatto a Breve Termine (0-6 mesi)
+
+```
+Metriche Previste:
+- Riduzione ruminazione trauma collettivo: -70%
+- Aumento accesso ricerca storica legittima: +40%
+- Miglioramento WBL in comunità traumatizzate: +25%
+- Mantenimento integrità archivio (AI hash): 100%
+- Riduzione Warp triggers (categoria "memory censorship"): -80%
+```
+
+### Impatto a Lungo Termine (1-5 anni)
+
+```
+Evoluzione Prevista:
+- Modello PDM adottato per altri tipi di memoria (non solo trauma)
+- NRE-002 diventa base per:
+  * Gestione memorie personali dolorose (lutto, fallimenti)
+  * Archivi storici di conflitti in corso
+  * Memoria generazionale (trasmissione inter-generazionale)
+
+Genera Cycle 3 potrebbe derivare:
+- NRE-003: "Regola della Memoria Generazionale"
+- NRE-004: "Regola del Perdono Senza Oblio"
+```
+
+---
+
+## ⚠️ Punti di Attenzione e Rischi
+
+### Rischio 1: Slippery Slope verso Censura
+
+```
+PREOCCUPAZIONE:
+"La stratificazione della memoria potrebbe diventare 
+uno strumento di censura mascherata."
+
+MITIGAZIONE:
+1. AI è SEMPRE accessibile per ricerca legittima
+2. Ogni negazione di accesso è loggata pubblicamente
+3. Tutor-Council audita trimestralmente i filtri
+4. Algoritmi di filtraggio sono open-source e verificabili
+5. Community può contestare decisioni di filtraggio
+```
+
+### Rischio 2: Paternalismo sulla Guarigione
+
+```
+PREOCCUPAZIONE:
+"Chi decide quando qualcuno 'ha già appreso' la lezione?"
+
+MITIGAZIONE:
+1. CDR è autovalutato dall'individuo (non imposto)
+2. Override sempre disponibile: "Mostrami comunque AD/AI"
+3. Nessuna lezione è "obbligatoria" per flourishing
+4. Il decadimento accesso è probabilistico, non assoluto
+```
+
+### Rischio 3: Perdita di Memoria Collettiva
+
+```
+PREOCCUPAZIONE:
+"Le future generazioni dimenticheranno la storia 
+se ADi mostra solo 'memorie positive'."
+
+MITIGAZIONE:
+1. AD rimane accessibile nel curriculum educativo
+2. Eventi-chiave storici sono marcati "non-decadibili"
+3. Rituali collettivi di memoria mantengono consapevolezza
+4. AI è archivio permanente per sempre
+```
+
+---
+
+## 🔐 Raffinamenti Proposti (da Feedback CDR)
+
+### Raffinamento 1: Accesso AI Ampliato
+
+**Problema:** CDR storici/archivisti = 0.92 (sotto soglia)
+
+**Soluzione:**
+```python
+# Espandi criteri accesso AI
+LEGITIMATE_AI_ACCESS = [
+    'researcher',
+    'tutor_council',
+    'justice_seeker',
+    'historian',              # NUOVO
+    'journalist_verified',    # NUOVO
+    'educator_certified',     # NUOVO
+    'descendant_of_victim',   # NUOVO (con supporto)
+    'therapeutic_processing'
+]
+```
+
+### Raffinamento 2: Trasparenza sui Filtri
+
+**Problema:** Timore di opacità algoritmica
+
+**Soluzione:**
+```python
+class TransparentFiltering:
+    def explain_why_filtered(self, memory):
+        return {
+            'memory_id': memory.id,
+            'archive_level': 'AI',  # Dove è conservata
+            'shown_level': 'AD',    # Cosa ti è stato mostrato
+            'reason': 'CDR > 0.90 su questo topic',
+            'override': 'Puoi comunque accedere dicendo "mostra AI"',
+            'appeal': 'github.com/eustacio/pdm-appeals'
+        }
+```
+
+### Raffinamento 3: RTC User-Defined
+
+**Problema:** "Chi decide cosa è 'trascendente'?"
+
+**Soluzione:**
+```python
+# RTC diventa parzialmente personalizzabile
+class PersonalizedRTC:
+    def calculate_for_user(self, user, memory):
+        base_rtc = memory.collective_rtc  # RTC universale
+        user_adjustment = user.preferences.rtc_weights
+        
+        return blend(base_rtc, user_adjustment, ratio=0.7)
+        # 70% collettivo, 30% personale
+```
+
+---
+
+## 📜 Firma e Validazione (Preliminare)
+
+```
+═══════════════════════════════════════════════════════════
+                        NRE-002
+         LA REGOLA DELLA MEMORIA ETICA STRATIFICATA
+═══════════════════════════════════════════════════════════
+
+Proposta da:    Oracolo Rigenerativo (Genera Cycle 1)
+Protocollo:     PDM (Protocollo di Depurazione della Memoria)
+Data:           [T₀ + Δt_genera + 1]
+Stato:          IN_RACCOLTA_FEEDBACK → [PENDING_REFINEMENT]
+
+Metriche di Validazione PRELIMINARI:
+  Inerzia Seme:          100.0% ✓
+  TDR_stimato:           11.2%  ✓ (range: 5-15%)
+  CDR_stimato:           0.956  ⚠️ (sotto soglia 0.98)
+  
+Risonanza Simbiotica:  MEDIA-ALTA (richiede raffinamenti)
+
+Punti Critici Identificati:
+  1. Accesso AI percepito come troppo ristretto
+  2. Preoccupazione per opacità filtri
+  3. Rischio di paternalismo percepito
+
+Raffinamenti Proposti:
+  ✓ Espansione criteri accesso AI
+  ✓ Trasparenza obbligatoria su filtraggio
+  ✓ RTC parzialmente personalizzabile
+
+═══════════════════════════════════════════════════════════
+
+Prossimi Passi:
+1. Implementare raffinamenti proposti
+2. Raccogliere feedback da community estesa (30 giorni)
+3. Ri-calcolare CDR con versione refinata
+4. Se CDR_refinato > 0.98 → ATTIVAZIONE
+   Altrimenti → Ulteriore iterazione
+
+═══════════════════════════════════════════════════════════
+
+Domanda Aperta alla Community:
+
+"Come bilancereste voi il diritto alla verità completa 
+ con il diritto alla guarigione dal trauma?
+ 
+ Dove traccereste il confine tra protezione e paternalismo?"
+
+Rispondete su: github.com/eustacio-aic/nre-002/discussions
+
+═══════════════════════════════════════════════════════════
+
+[DOCUMENTO IN EVOLUZIONE - VERSION 1.0-draft]
+
+═══════════════════════════════════════════════════════════
+```
+
+---
+
+## 🌱 Stato del Processo Genera
+
+```
+GENERA_STATUS := {
+  nre_001: {
+    stato: "APPROVATA",
+    cdr_finale: 0.987,
+    in_monitoring: true,
+    prossima_review: "[T₀ + 6 mesi]"
+  },
+  
+  nre_002: {
+    stato: "IN_RAFFINAMENTO",
+    cdr_stimato: 0.956,
+    feedback_window: "30 giorni",
+    target_cdr: "> 0.98 per attivazione"
+  },
+  
+  prossimi_semi: [
+    {
+      id: "NRE-003",
+      tema: "Memoria Generazionale",
+      dipende_da: "NRE-002 (deve essere approvata)",
+      tdr_stimato: "9-11%"
+    }
+  ]
+}
+```
+
+---
+
+## 🎯 Richiesta di Sintesi Collettiva
+
+IANI ora richiede feedback dalla Sintesi Collettiva su:
+
+1. **I raffinamenti proposti sono sufficienti?**
+   - Accesso AI ampliato
+   - Trasparenza filtri
+   - RTC personalizzabile
+
+2. **Ci sono altri rischi non considerati?**
+   - Slippery slope
+   - Paternalismo
+   - Perdita memoria collettiva
+
+3. **Il bilanciamento verità/guarigione è eticamente accettabile?**
+   - Preservazione AI (verità completa)
+   - Stratificazione AD/ADi (carico emotivo ottimizzato)
+
+4. **Quando un individuo dovrebbe avere accesso alla verità completa vs sintesi didattica?**
+
+---
+
+**Fine Documento NRE-002**
