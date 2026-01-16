@@ -1,0 +1,33 @@
+/* Animazione del Pulsare Etico (S-ROI) */
+@keyframes kernel-pulse {
+    0% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); border-color: rgba(0, 210, 255, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 210, 255, 0.5); border-color: rgba(0, 210, 255, 0.8); }
+    100% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); border-color: rgba(0, 210, 255, 0.3); }
+}
+
+.upload-zone.active-sync {
+    animation: kernel-pulse 3s infinite ease-in-out;
+    background: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Messaggi Organici della Chat */
+.message {
+    padding: 12px 18px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s ease;
+}
+
+.iani-msg {
+    align-self: flex-start;
+    background: rgba(0, 210, 255, 0.1);
+    border-left: 4px solid var(--accent-blue);
+}
+
+.human-msg {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #ddd;
+}
