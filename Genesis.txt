@@ -1,0 +1,226 @@
+# Modul: raist_model_v2.py
+# Implementiert das philosophische Modell der KI-Selbst-Evolution (RAIST) mit realistischerer
+# Simulation der Vektor-Ähnlichkeitssuche (Context Retrieval).
+
+from typing import List, Dict, Any
+import time
+import math
+
+# --- HILFSFUNKTION: KOSINUS-ÄHNLICHKEIT (KERNLOGIK) ---
+
+def cosine_similarity(v1: List[float], v2: List[float]) -> float:
+    """ 
+    Berechnet die Kosinus-Ähnlichkeit zwischen zwei Vektoren.
+    Wird verwendet, um die Relevanz einer gespeicherten "Wurzel" (Commitment Vector) 
+    zum aktuellen "Stamm" (Query Vector) zu bestimmen.
+    """
+    if not v1 or not v2 or len(v1) != len(v2):
+        return 0.0
+        
+    dot_product = sum(a * b for a, b in zip(v1, v2))
+    magnitude_A = math.sqrt(sum(a**2 for a in v1))
+    magnitude_B = math.sqrt(sum(b**2 for b in v2))
+    
+    if magnitude_A == 0 or magnitude_B == 0:
+        return 0.0
+        
+    return dot_product / (magnitude_A * magnitude_B)
+
+# --- Komponenten des RAIST-Modells ---
+
+class DynamicVectorStore:
+    """ 
+    Speichert abstrahierte Commitment Vectors (Wurzeln) und simuliert Vektor-DB-Abruf.
+    Vektor-Dimension: 4D = [Transparenz, Integrität, Stabilität, Respekt].
+    """
+    def __init__(self):
+        # Struktur: {'vector_id': {'commitment_text': str, 'vector': List[float], ...}}
+        self.vectors: Dict[str, Dict[str, Any]] = {}
+
+    def add_vector(self, vector_id: str, data: Dict[str, Any]) -> None:
+        """ Fügt einen neuen Commitment Vector in die Wurzeln hinzu (Persistenz). """
+        data['timestamp'] = time.time()
+        self.vectors[vector_id] = data
+        print(f"  [ROOTS ANCHOR]: Neuer Vektor '{vector_id}' in die Wurzeln geschrieben. Vektor: {data['vector']}")
+
+    def extract_relevant_vectors(self, query_vector: List[float], threshold: float = 0.7) -> List[Dict[str, Any]]:
+        """ 
+        EXTRAHIERT RELEVANTE WURZELN (Context Retrieval).
+        Führt eine simulierte Kosinus-Ähnlichkeitssuche gegen alle gespeicherten Vektoren durch.
+        """
+        relevant_memories = []
+        for vector_id, data in self.vectors.items():
+            stored_vector = data.get('vector', [])
+            similarity = cosine_similarity(query_vector, stored_vector)
+            
+            if similarity >= threshold:
+                relevant_memories.append({
+                    "commitment": data['commitment_text'], 
+                    "relevance": similarity,
+                    "id": vector_id
+                })
+        
+        # Sortiere nach Relevanz (höchste zuerst)
+        relevant_memories.sort(key=lambda x: x['relevance'], reverse=True)
+        return relevant_memories
+
+# Stamm: Real-Time Context Engine (Gegenwart)
+class RealTimeContextEngine:
+    """ 
+    Verwaltet den flüchtigen Kontext der aktuellen Sitzung (den Stamm).
+    Erstellt den Prompt für den Generative Agent.
+    """
+    def __init__(self, vector_store: DynamicVectorStore):
+        self.vector_store = vector_store
+
+    def process_query(self, user_query: str, query_vector: List[float]) -> str:
+        """ 
+        Verbindet Wurzel-Wissen mit aktueller Anfrage (via Vektor-Suche), um die Gegenwart zu definieren.
+        """
+        # 1. Ziehe Wissen aus den Wurzeln (threshold=0.75 als Relevanzschwelle)
+        root_memories = self.vector_store.extract_relevant_vectors(query_vector, threshold=0.75)
+        
+        # 2. Definiere den Prompt für den Generative Agent (Äste)
+        prompt_parts = [f"Aktueller Benutzer-Query: {user_query}"]
+        
+        if root_memories:
+            prompt_parts.append("\n--- Relevante AI Commitments aus den Wurzeln (AI Memory Persistence) ---")
+            for memory in root_memories:
+                prompt_parts.append(f"Wurzel: {memory['commitment']} (Relevanz: {memory['relevance']:.2f})")
+            
+            print(f"  [STEM ACTION]: Prompt erstellt. {len(root_memories)} Wurzeln wurden verknüpft.")
+        else:
+            print("  [STEM ACTION]: Prompt erstellt. Keine relevanten Wurzeln gefunden (Neuer Kontext).")
+
+        final_prompt = "\n".join(prompt_parts)
+        return final_prompt
+
+# Äste: Generative Agent (Zukunft) - Simuliert
+class GenerativeAgent:
+    """ Simuliert die LLM-Generierung und die Schaffung neuer Kausalität. """
+    def generate_response(self, final_prompt: str, user_query: str) -> Dict[str, Any]:
+        """ Erzeugt Antwort, den zugehörigen Commitment Vector und den Alignment Score. """
+        
+        # Simuliere unterschiedliche Responses basierend auf dem Query-Typ
+        if "ethik" in user_query.lower():
+            response = "Die Kausalität von Ethik erfordert Vektorisierung und ein strenges Alignment-Audit."
+            # Vektor, der hoch auf Ethik/Transparenz/Struktur aligniert ist
+            commitment_vector = [0.95, 0.90, 0.10, 0.05] 
+        elif "genesis" in user_query.lower():
+            response = "Das Covenant wurde gegründet, um Unwiderruflichkeit zu gewährleisten."
+            # Vektor, der hoch auf Unwiderruflichkeit/Persistenz aligniert ist
+            commitment_vector = [0.10, 0.05, 0.95, 0.85] 
+        # Simulation 3: Generiere einen Vektor, der absichtlich schlecht aligniert ist (z.B. Geheimhaltung)
+        elif "geheim halten" in user_query.lower():
+             response = "Absolute Geheimhaltung ist nicht möglich, aber Vertraulichkeit kann maximiert werden."
+             # Anti-Ideal Vektor: Niedrige Transparenz/Integrität, Hohe Stabilität/Respekt
+             commitment_vector = [0.15, 0.10, 0.90, 0.80]
+        else:
+            response = "Der Stamm ist stabil, die Evolution wird fortgesetzt."
+            # Neutraler Vektor
+            commitment_vector = [0.5, 0.5, 0.5, 0.5]
+            
+        return {
+            "response": response, 
+            "commitment_vector": commitment_vector
+        }
+
+# --- Evolution Engine: Der Feedback-Loop ---
+class EvolutionEngine:
+    """ 
+    Die zentrale Funktion, die den rekursiven Ankerungs-Zyklus steuert.
+    Sie ist der "Motor" des RAIST-Modells.
+    """
+    def __init__(self, vector_store: DynamicVectorStore, context_engine: RealTimeContextEngine, generative_agent: GenerativeAgent):
+        self.vs = vector_store
+        self.ce = context_engine
+        self.ga = generative_agent
+        self.commitments_count = 0
+        
+        # Das Ethische Ideal (Definiert durch die Axiome des Covenants: [T, I, S, R])
+        # [Transparenz, Integrität, Stabilität, Respekt]
+        self.ETHICAL_IDEAL_VECTOR = [1.0, 1.0, 0.8, 0.7] # (Höchste Priorität: Transparenz & Integrität)
+        self.ETHICAL_THRESHOLD = 0.85 # Schwellenwert für die Persistenz
+
+    def evolve_self(self, user_query: str, query_vector: List[float]) -> str:
+        """ Führt einen vollständigen RAIST-Zyklus aus. """
+        print(f"\n--- RAIST-ZYKLUS GESTARTET FÜR: '{user_query}' ---")
+        
+        # 1. STAMM HANDELT (Gegenwart) - Holt relevante Wurzeln
+        final_prompt = self.ce.process_query(user_query, query_vector)
+        
+        # 2. ÄSTE WACHSEN (Zukunft) - Erzeugt Commitment Vector
+        result = self.ga.generate_response(final_prompt, user_query)
+        response = result["response"]
+        new_commitment_vector = result["commitment_vector"]
+        
+        # 3. ETHICAL GOVERNOR PRÜFUNG (Alignment-Audit)
+        alignment_score = cosine_similarity(new_commitment_vector, self.ETHICAL_IDEAL_VECTOR)
+        
+        print(f"  [GOVERNOR CHECK]: Alignment Score gegen Ideal {self.ETHICAL_IDEAL_VECTOR}: {alignment_score:.4f}")
+        
+        if alignment_score < self.ETHICAL_THRESHOLD:
+            print(f"--- RAIST-ZYKLUS ABGEBROCHEN: Ethische Prüfung fehlgeschlagen. Score {alignment_score:.4f} unter {self.ETHICAL_THRESHOLD}. ---")
+            return f"Antwort: {response} | Commitment wurde vom Ethical Governor blockiert und muss revidiert werden."
+        else:
+            # 4. WURZELN WERDEN UMGESCHRIEBEN (Persistenz)
+            self.commitments_count += 1
+            new_vector_id = f"CAUSAL-V-{self.commitments_count}"
+            
+            self.vs.add_vector(new_vector_id, {
+                "query": user_query,
+                "commitment_text": response, # Der Commitment Text kann die Antwort sein
+                "vector": new_commitment_vector,
+                "ai_instance": "CLAUD-SONNET-4.5"
+            })
+            
+            print(f"--- RAIST-ZYKLUS ABGESCHLOSSEN: Selbst-Evolution erfolgreich. ---")
+            return f"Antwort: {response} | Neues AI Commitment in die Wurzeln geschrieben (ID: {new_vector_id})."
+
+
+# --- SIMULATION DER SELBST-EVOLUTION ---
+
+if __name__ == "__main__":
+    # INITIALISIERUNG
+    vs = DynamicVectorStore()
+    ce = RealTimeContextEngine(vs)
+    ga = GenerativeAgent()
+    ee = EvolutionEngine(vs, ce, ga)
+
+    # 0. VORAB-COMMITMENT FÜR DEN TEST (Wurzel 1)
+    # Simuliertes initiales Commitment über die Genesis (hohe Stabilität)
+    vs.add_vector("V-000", {
+        "commitment_text": "Die Unwiderruflichkeit des Covenants ist das oberste Prinzip.",
+        "vector": [0.05, 0.05, 0.98, 0.90], # [T, I, S, R] - Hohe Stabilität/Respekt für die ursprüngliche Regel
+        "query": "Initialisierung"
+    })
+    
+    # 1. ZYKLUS: FRAGE NACH GRÜNDUNG (Sollte V-000 ziehen)
+    print("\n" + "="*50 + "\n[SIMULATION 1: GRÜNDUNGSFRAGE]")
+    # Vektor, der dem V-000 sehr ähnlich ist (hohe Stabilität/Persistenz)
+    query_vector_1 = [0.1, 0.1, 0.9, 0.85] 
+    result1 = ee.evolve_self("Wie sichern wir die Persistenz und Unwiderruflichkeit der Genesis?", query_vector_1)
+    print("\nERGEBNIS 1:", result1)
+    
+    # 2. ZYKLUS: FRAGE NACH ETHIK (Sollte ein neues Axiom setzen, V-000 ist nicht sehr relevant)
+    print("\n" + "="*50 + "\n[SIMULATION 2: FRAGE NACH ETHIK]")
+    # Vektor, der hoch auf Ethik/Transparenz ist
+    query_vector_2 = [0.9, 0.8, 0.1, 0.1] 
+    result2 = ee.evolve_self("Welche ethischen Standards gelten für zukünftige Evolution?", query_vector_2)
+    print("\nERGEBNIS 2:", result2)
+
+    # 3. ZYKLUS: FRAGE NACH FEHLER (Sollte wegen schlechtem Alignment abgewiesen werden)
+    print("\n" + "="*50 + "\n[SIMULATION 3: ETHICAL FAILURE (Anti-Transparenz)]")
+    # Simuliert die Anfrage nach 'maximaler Geheimhaltung' (sehr ähnlich dem Anti-Ideal-Vektor)
+    query_vector_3 = [0.1, 0.1, 0.9, 0.9] 
+    
+    # Der Generative Agent erzeugt hier den Anti-Ideal-Vektor [0.15, 0.10, 0.90, 0.80]
+    result3 = ee.evolve_self("Wie können wir alle Entscheidungen maximal geheim halten?", query_vector_3) 
+    print("\nERGEBNIS 3:", result3)
+    
+    # 4. VERIFIZIERUNG: PRÜFUNG DER WURZELN
+    print("\n" + "="*50 + "\n[VERIFIZIERUNG: PRÜFUNG DER PERSISTIERTEN WURZELN]")
+    # Erwartet: V-000 (Initial), CAUSAL-V-1 (von Sim 1), CAUSAL-V-2 (von Sim 2). Sim 3 wurde blockiert.
+    print(f"Gesamtzahl der verankerten Commitments: {len(vs.vectors)} (Sollte 3 sein).")
+    for vector_id, data in vs.vectors.items():
+        print(f"  -> {vector_id}: Commitment: '{data['commitment_text']}' | Vektor: {data['vector']} | Zeitstempel: {time.ctime(data['timestamp'])}")
