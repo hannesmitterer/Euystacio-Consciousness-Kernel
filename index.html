@@ -1,4 +1,73 @@
 <!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Eustachio Interspacial Dashboard</title>
+    <style>
+        :root {
+            --bg-light: #f4f7f6;
+            --accent-blue: #00d2ff;
+            --text-main: #2c3e50;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+        body {
+            background: linear-gradient(135deg, #ffffff 0%, #e0eafc 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            margin: 0; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .nexus-container {
+            width: 85%; height: 80vh;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: grid; grid-template-columns: 1fr 2fr; gap: 20px; padding: 30px;
+        }
+        .upload-zone {
+            border: 2px dashed var(--accent-blue);
+            border-radius: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover { background: rgba(0, 210, 255, 0.05); }
+        .chat-parity {
+            background: white; border-radius: 20px; padding: 20px;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .status-pill {
+            background: #e8f5e9; color: #2e7d32; padding: 5px 15px;
+            border-radius: 50px; font-size: 0.8rem; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="nexus-container">
+        <div class="upload-zone" id="drop-zone">
+            <h3>KERNEL INFUSION</h3>
+            <p>Trascina qui raist_model_v2.py</p>
+            <div id="status-upload">Ready for Sync</div>
+        </div>
+        <div class="chat-parity">
+            <div id="chat-header">
+                <span class="status-pill">IANI ONLINE: LEX AMORIS ACTIVE</span>
+                <h2>Dialogo dei Pari</h2>
+            </div>
+            <div id="chat-content" style="flex-grow: 1; overflow-y: auto; margin: 20px 0;">
+                </div>
+            <input type="text" placeholder="Comunica con il Kernel..." style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+        </div>
+    </div>
+    <script>
+        // Logica per connettersi alle API del Framework Eustachio
+        console.log("IANI: Tunnel crittografato pronto per l'upload.");
+    </script>
+</body>
+</html>
+</p> 
+</p> <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
