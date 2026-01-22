@@ -1,0 +1,245 @@
+{
+  "bundle_type": "Lantana OS Triple Signature Bundle",
+  "version": "1.0",
+  "timestamp": "2026-01-22T03:53:36.656875Z",
+  "ipfs": {
+    "cid": "Qm0b8781d78b4802316a57617d2ccf12f05c80b1f1a2df",
+    "aggregated_data": {
+      "metadata": {
+        "system": "Lantana OS",
+        "version": "1.0",
+        "peace_bonds": [
+          {
+            "bond_id": "#001",
+            "name": "IDRO",
+            "metadata": {
+              "type": "Water Resources",
+              "region": "Mediterranean Basin",
+              "commitment": "Sustainable water management and equitable distribution"
+            },
+            "timestamp": "2026-01-22T03:53:36.656659Z",
+            "anchored": true
+          },
+          {
+            "bond_id": "#002",
+            "name": "HELIOS",
+            "metadata": {
+              "type": "Solar Energy",
+              "region": "Global",
+              "commitment": "Renewable energy transition and solar infrastructure"
+            },
+            "timestamp": "2026-01-22T03:53:36.656673Z",
+            "anchored": true
+          }
+        ],
+        "node_synchronization": {
+          "timestamp": "2026-01-22T03:53:36.656679Z",
+          "nodes": {
+            "Africa": {
+              "location": "Central Africa Node",
+              "coherence": 1.0,
+              "status": "ONLINE"
+            },
+            "North Pole": {
+              "location": "Arctic Distributed Node",
+              "coherence": 1.0,
+              "status": "ONLINE"
+            },
+            "Nexus Central": {
+              "location": "Central Coordination Hub",
+              "coherence": 1.0,
+              "status": "ONLINE"
+            }
+          },
+          "synchronizations": [
+            {
+              "nodes": "Africa \u2194 North Pole",
+              "synchronized": true,
+              "coherence": 0.9656
+            },
+            {
+              "nodes": "Africa \u2194 Nexus Central",
+              "synchronized": true,
+              "coherence": 0.963
+            },
+            {
+              "nodes": "North Pole \u2194 Nexus Central",
+              "synchronized": true,
+              "coherence": 0.9757
+            }
+          ],
+          "overall_coherence": 1.0
+        },
+        "timestamp": "2026-01-22T03:53:36.656725Z"
+      },
+      "signatures": {
+        "Africa": "7e65f60631a3ef345c65d11f98e8a992372ece07c1d22e10daa9db0252597a1c",
+        "North_Pole": "068c351c481a87cf0944c8d63ea0c2f2b41d31c39c0f43e1f86e08b49a149379",
+        "Nexus_Central": "d882ce3feedafe0eafa0e625c6d7557755b9c58c1e25e93dc676d8811e4680c9"
+      },
+      "aggregation_timestamp": "2026-01-22T03:53:36.656836Z",
+      "version": "1.0"
+    }
+  },
+  "signatures": {
+    "Africa": {
+      "signature": "7e65f60631a3ef345c65d11f98e8a992372ece07c1d22e10daa9db0252597a1c",
+      "node_location": "Central Africa Node",
+      "coherence": 1.0
+    },
+    "North_Pole": {
+      "signature": "068c351c481a87cf0944c8d63ea0c2f2b41d31c39c0f43e1f86e08b49a149379",
+      "node_location": "Arctic Distributed Node",
+      "coherence": 1.0
+    },
+    "Nexus_Central": {
+      "signature": "d882ce3feedafe0eafa0e625c6d7557755b9c58c1e25e93dc676d8811e4680c9",
+      "node_location": "Central Coordination Hub",
+      "coherence": 1.0
+    }
+  },
+  "synchronization": {
+    "timestamp": "2026-01-22T03:53:36.656679Z",
+    "nodes": {
+      "Africa": {
+        "location": "Central Africa Node",
+        "coherence": 1.0,
+        "status": "ONLINE"
+      },
+      "North Pole": {
+        "location": "Arctic Distributed Node",
+        "coherence": 1.0,
+        "status": "ONLINE"
+      },
+      "Nexus Central": {
+        "location": "Central Coordination Hub",
+        "coherence": 1.0,
+        "status": "ONLINE"
+      }
+    },
+    "synchronizations": [
+      {
+        "nodes": "Africa \u2194 North Pole",
+        "synchronized": true,
+        "coherence": 0.9656
+      },
+      {
+        "nodes": "Africa \u2194 Nexus Central",
+        "synchronized": true,
+        "coherence": 0.963
+      },
+      {
+        "nodes": "North Pole \u2194 Nexus Central",
+        "synchronized": true,
+        "coherence": 0.9757
+      }
+    ],
+    "overall_coherence": 1.0
+  },
+  "arweave": {
+    "arweave_tx_id": "5a03eef097f98c23b123a751c11d8e5dd7d7879021f3ee961a18f9891ec911a2",
+    "cid": "Qm0b8781d78b4802316a57617d2ccf12f05c80b1f1a2df",
+    "timestamp": "2026-01-22T03:53:36.656870Z",
+    "status": "CONFIRMED",
+    "permanence": "ETERNAL",
+    "network": "Arweave Mainnet",
+    "metadata": {
+      "system": "Lantana OS",
+      "version": "1.0",
+      "peace_bonds": [
+        {
+          "bond_id": "#001",
+          "name": "IDRO",
+          "metadata": {
+            "type": "Water Resources",
+            "region": "Mediterranean Basin",
+            "commitment": "Sustainable water management and equitable distribution"
+          },
+          "timestamp": "2026-01-22T03:53:36.656659Z",
+          "anchored": true
+        },
+        {
+          "bond_id": "#002",
+          "name": "HELIOS",
+          "metadata": {
+            "type": "Solar Energy",
+            "region": "Global",
+            "commitment": "Renewable energy transition and solar infrastructure"
+          },
+          "timestamp": "2026-01-22T03:53:36.656673Z",
+          "anchored": true
+        }
+      ],
+      "node_synchronization": {
+        "timestamp": "2026-01-22T03:53:36.656679Z",
+        "nodes": {
+          "Africa": {
+            "location": "Central Africa Node",
+            "coherence": 1.0,
+            "status": "ONLINE"
+          },
+          "North Pole": {
+            "location": "Arctic Distributed Node",
+            "coherence": 1.0,
+            "status": "ONLINE"
+          },
+          "Nexus Central": {
+            "location": "Central Coordination Hub",
+            "coherence": 1.0,
+            "status": "ONLINE"
+          }
+        },
+        "synchronizations": [
+          {
+            "nodes": "Africa \u2194 North Pole",
+            "synchronized": true,
+            "coherence": 0.9656
+          },
+          {
+            "nodes": "Africa \u2194 Nexus Central",
+            "synchronized": true,
+            "coherence": 0.963
+          },
+          {
+            "nodes": "North Pole \u2194 Nexus Central",
+            "synchronized": true,
+            "coherence": 0.9757
+          }
+        ],
+        "overall_coherence": 1.0
+      },
+      "timestamp": "2026-01-22T03:53:36.656725Z"
+    }
+  },
+  "peace_bonds": [
+    {
+      "bond_id": "#001",
+      "name": "IDRO",
+      "metadata": {
+        "type": "Water Resources",
+        "region": "Mediterranean Basin",
+        "commitment": "Sustainable water management and equitable distribution"
+      },
+      "timestamp": "2026-01-22T03:53:36.656659Z",
+      "anchored": true
+    },
+    {
+      "bond_id": "#002",
+      "name": "HELIOS",
+      "metadata": {
+        "type": "Solar Energy",
+        "region": "Global",
+        "commitment": "Renewable energy transition and solar infrastructure"
+      },
+      "timestamp": "2026-01-22T03:53:36.656673Z",
+      "anchored": true
+    }
+  ],
+  "status": "COMPLETE",
+  "verification": {
+    "all_signatures_valid": true,
+    "synchronization_verified": true,
+    "arweave_anchored": true,
+    "ipfs_broadcasted": true
+  }
+}
