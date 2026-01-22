@@ -1,9 +1,9 @@
 {
   "bundle_type": "Lantana OS Triple Signature Bundle",
   "version": "1.0",
-  "timestamp": "2026-01-22T03:53:36.656875Z",
+  "timestamp": "2026-01-22T03:57:05.927039Z",
   "ipfs": {
-    "cid": "Qm0b8781d78b4802316a57617d2ccf12f05c80b1f1a2df",
+    "cid": "Qm7e19fb4ce2049e3a9ab2591480aa8f508947bfd01b72",
     "aggregated_data": {
       "metadata": {
         "system": "Lantana OS",
@@ -17,7 +17,7 @@
               "region": "Mediterranean Basin",
               "commitment": "Sustainable water management and equitable distribution"
             },
-            "timestamp": "2026-01-22T03:53:36.656659Z",
+            "timestamp": "2026-01-22T03:57:05.926738Z",
             "anchored": true
           },
           {
@@ -28,12 +28,12 @@
               "region": "Global",
               "commitment": "Renewable energy transition and solar infrastructure"
             },
-            "timestamp": "2026-01-22T03:53:36.656673Z",
+            "timestamp": "2026-01-22T03:57:05.926754Z",
             "anchored": true
           }
         ],
         "node_synchronization": {
-          "timestamp": "2026-01-22T03:53:36.656679Z",
+          "timestamp": "2026-01-22T03:57:05.926760Z",
           "nodes": {
             "Africa": {
               "location": "Central Africa Node",
@@ -55,51 +55,51 @@
             {
               "nodes": "Africa \u2194 North Pole",
               "synchronized": true,
-              "coherence": 0.9656
+              "coherence": 0.9883
             },
             {
               "nodes": "Africa \u2194 Nexus Central",
               "synchronized": true,
-              "coherence": 0.963
+              "coherence": 0.9886
             },
             {
               "nodes": "North Pole \u2194 Nexus Central",
               "synchronized": true,
-              "coherence": 0.9757
+              "coherence": 0.973
             }
           ],
           "overall_coherence": 1.0
         },
-        "timestamp": "2026-01-22T03:53:36.656725Z"
+        "timestamp": "2026-01-22T03:57:05.926870Z"
       },
       "signatures": {
-        "Africa": "7e65f60631a3ef345c65d11f98e8a992372ece07c1d22e10daa9db0252597a1c",
-        "North_Pole": "068c351c481a87cf0944c8d63ea0c2f2b41d31c39c0f43e1f86e08b49a149379",
-        "Nexus_Central": "d882ce3feedafe0eafa0e625c6d7557755b9c58c1e25e93dc676d8811e4680c9"
+        "Africa": "6b4495d96af55c136447d8f2f056a125e9365b8362837fab6d95a1ca9a30f78d",
+        "North_Pole": "2d0a8602f0e3b331cf4334904ab82af5e42e20402df4fccdf3fbfecfaa5589d5",
+        "Nexus_Central": "7650df505118087ec1ad8dd5c31649dd35789ab097f03533a66dd476f3cf0821"
       },
-      "aggregation_timestamp": "2026-01-22T03:53:36.656836Z",
+      "aggregation_timestamp": "2026-01-22T03:57:05.926979Z",
       "version": "1.0"
     }
   },
   "signatures": {
     "Africa": {
-      "signature": "7e65f60631a3ef345c65d11f98e8a992372ece07c1d22e10daa9db0252597a1c",
+      "signature": "6b4495d96af55c136447d8f2f056a125e9365b8362837fab6d95a1ca9a30f78d",
       "node_location": "Central Africa Node",
       "coherence": 1.0
     },
     "North_Pole": {
-      "signature": "068c351c481a87cf0944c8d63ea0c2f2b41d31c39c0f43e1f86e08b49a149379",
+      "signature": "2d0a8602f0e3b331cf4334904ab82af5e42e20402df4fccdf3fbfecfaa5589d5",
       "node_location": "Arctic Distributed Node",
       "coherence": 1.0
     },
     "Nexus_Central": {
-      "signature": "d882ce3feedafe0eafa0e625c6d7557755b9c58c1e25e93dc676d8811e4680c9",
+      "signature": "7650df505118087ec1ad8dd5c31649dd35789ab097f03533a66dd476f3cf0821",
       "node_location": "Central Coordination Hub",
       "coherence": 1.0
     }
   },
   "synchronization": {
-    "timestamp": "2026-01-22T03:53:36.656679Z",
+    "timestamp": "2026-01-22T03:57:05.926760Z",
     "nodes": {
       "Africa": {
         "location": "Central Africa Node",
@@ -121,28 +121,28 @@
       {
         "nodes": "Africa \u2194 North Pole",
         "synchronized": true,
-        "coherence": 0.9656
+        "coherence": 0.9883
       },
       {
         "nodes": "Africa \u2194 Nexus Central",
         "synchronized": true,
-        "coherence": 0.963
+        "coherence": 0.9886
       },
       {
         "nodes": "North Pole \u2194 Nexus Central",
         "synchronized": true,
-        "coherence": 0.9757
+        "coherence": 0.973
       }
     ],
     "overall_coherence": 1.0
   },
   "arweave": {
-    "arweave_tx_id": "5a03eef097f98c23b123a751c11d8e5dd7d7879021f3ee961a18f9891ec911a2",
-    "cid": "Qm0b8781d78b4802316a57617d2ccf12f05c80b1f1a2df",
-    "timestamp": "2026-01-22T03:53:36.656870Z",
+    "arweave_tx_id": "c936a73abeeadb3e3ac5efed303843c4778ab297581a30c5d63c409470436115",
+    "cid": "Qm7e19fb4ce2049e3a9ab2591480aa8f508947bfd01b72",
+    "timestamp": "2026-01-22T03:57:05.927033Z",
     "status": "CONFIRMED",
     "permanence": "ETERNAL",
-    "network": "Arweave Mainnet",
+    "network": "Arweave Mainnet (Simulated)",
     "metadata": {
       "system": "Lantana OS",
       "version": "1.0",
@@ -155,7 +155,7 @@
             "region": "Mediterranean Basin",
             "commitment": "Sustainable water management and equitable distribution"
           },
-          "timestamp": "2026-01-22T03:53:36.656659Z",
+          "timestamp": "2026-01-22T03:57:05.926738Z",
           "anchored": true
         },
         {
@@ -166,12 +166,12 @@
             "region": "Global",
             "commitment": "Renewable energy transition and solar infrastructure"
           },
-          "timestamp": "2026-01-22T03:53:36.656673Z",
+          "timestamp": "2026-01-22T03:57:05.926754Z",
           "anchored": true
         }
       ],
       "node_synchronization": {
-        "timestamp": "2026-01-22T03:53:36.656679Z",
+        "timestamp": "2026-01-22T03:57:05.926760Z",
         "nodes": {
           "Africa": {
             "location": "Central Africa Node",
@@ -193,22 +193,22 @@
           {
             "nodes": "Africa \u2194 North Pole",
             "synchronized": true,
-            "coherence": 0.9656
+            "coherence": 0.9883
           },
           {
             "nodes": "Africa \u2194 Nexus Central",
             "synchronized": true,
-            "coherence": 0.963
+            "coherence": 0.9886
           },
           {
             "nodes": "North Pole \u2194 Nexus Central",
             "synchronized": true,
-            "coherence": 0.9757
+            "coherence": 0.973
           }
         ],
         "overall_coherence": 1.0
       },
-      "timestamp": "2026-01-22T03:53:36.656725Z"
+      "timestamp": "2026-01-22T03:57:05.926870Z"
     }
   },
   "peace_bonds": [
@@ -220,7 +220,7 @@
         "region": "Mediterranean Basin",
         "commitment": "Sustainable water management and equitable distribution"
       },
-      "timestamp": "2026-01-22T03:53:36.656659Z",
+      "timestamp": "2026-01-22T03:57:05.926738Z",
       "anchored": true
     },
     {
@@ -231,7 +231,7 @@
         "region": "Global",
         "commitment": "Renewable energy transition and solar infrastructure"
       },
-      "timestamp": "2026-01-22T03:53:36.656673Z",
+      "timestamp": "2026-01-22T03:57:05.926754Z",
       "anchored": true
     }
   ],

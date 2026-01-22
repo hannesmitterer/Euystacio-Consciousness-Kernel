@@ -20,7 +20,6 @@ import json
 import time
 from typing import Dict, List, Any, Tuple
 from datetime import datetime, timezone
-import random
 
 
 class IPFSManager:
@@ -30,17 +29,19 @@ class IPFSManager:
     def generate_cid(data: Dict[str, Any]) -> str:
         """
         Generate a Content Identifier (CID) for IPFS.
-        This simulates IPFS CIDv1 generation.
+        
+        NOTE: This is a simulated CID for demonstration purposes.
+        In production, use actual IPFS libraries for CID generation.
         
         Args:
             data: The data to generate CID for
             
         Returns:
-            A simulated CID string
+            A simulated CID string in CIDv1 format
         """
         data_str = json.dumps(data, sort_keys=True)
         hash_obj = hashlib.sha256(data_str.encode())
-        # Simulate CIDv1 format (base58btc multibase)
+        # Simulate CIDv1 format (base58btc multibase with 46 character length typical for CIDv1)
         return f"Qm{hash_obj.hexdigest()[:44]}"
     
     @staticmethod
@@ -82,6 +83,9 @@ class TripleSignatureNode:
         """
         Create a cryptographic signature for the data.
         
+        NOTE: In production, this should use proper digital signatures (e.g., Ed25519)
+        with public/private key pairs for verification.
+        
         Args:
             data: The data to sign
             
@@ -89,7 +93,8 @@ class TripleSignatureNode:
             Signature hash
         """
         data_str = json.dumps(data, sort_keys=True)
-        combined = f"{self.name}:{self.location}:{data_str}:{time.time()}"
+        # Include node identity in signature for uniqueness
+        combined = f"{self.name}:{self.location}:{data_str}"
         return hashlib.sha256(combined.encode()).hexdigest()
     
     def update_coherence(self, value: float):
@@ -113,6 +118,9 @@ class NodeSynchronizer:
         """
         Verify synchronization between two nodes.
         
+        NOTE: This is a simulation. In production, implement actual network
+        synchronization checks (e.g., comparing recent block hashes, timestamp deltas).
+        
         Args:
             node1_name: First node name
             node2_name: Second node name
@@ -131,8 +139,9 @@ class NodeSynchronizer:
         
         # Simulate some synchronization verification
         # In production, this would involve actual network checks
-        sync_factor = random.uniform(0.96, 1.0)
-        final_coherence = coherence * sync_factor
+        # Using a deterministic but realistic sync factor
+        sync_factor = 0.97 + (hash(f"{node1_name}{node2_name}") % 100) / 3333.0
+        final_coherence = min(1.0, coherence * sync_factor)
         
         is_synchronized = final_coherence >= self.MIN_COHERENCE
         
@@ -228,6 +237,9 @@ class STAnchor:
         """
         Notarize CID on Arweave network for eternal persistence.
         
+        NOTE: This is a simulation. In production, use actual Arweave SDK
+        to submit transactions and receive real transaction IDs.
+        
         Args:
             cid: The IPFS CID to notarize
             metadata: Associated metadata
@@ -235,8 +247,9 @@ class STAnchor:
         Returns:
             Arweave transaction record
         """
-        # Simulate Arweave transaction
-        tx_id = hashlib.sha256(f"{cid}:{time.time()}".encode()).hexdigest()
+        # Generate deterministic transaction ID based on content
+        tx_data = f"{cid}:{json.dumps(metadata, sort_keys=True)}"
+        tx_id = hashlib.sha256(tx_data.encode()).hexdigest()
         
         return {
             "arweave_tx_id": tx_id,
@@ -244,7 +257,7 @@ class STAnchor:
             "timestamp": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
             "status": "CONFIRMED",
             "permanence": "ETERNAL",
-            "network": "Arweave Mainnet",
+            "network": "Arweave Mainnet (Simulated)",
             "metadata": metadata
         }
 

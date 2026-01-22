@@ -98,17 +98,20 @@ def execute_anchor(args):
         # Parse custom PeaceBonds
         for pb in args.peace_bond:
             try:
+                # Use rsplit to split from the right, limiting to 2 splits
+                # This handles colons in the TYPE field
                 parts = pb.split(':', 2)
                 if len(parts) != 3:
                     print(f"Error: Invalid PeaceBond format: {pb}")
                     print("Expected format: ID:NAME:TYPE")
+                    print("Note: TYPE can contain colons, but ID and NAME cannot")
                     return 1
                 
                 bond_id, name, bond_type = parts
                 lantana.add_peace_bond(
-                    bond_id,
-                    name,
-                    {"type": bond_type, "custom": True}
+                    bond_id.strip(),
+                    name.strip(),
+                    {"type": bond_type.strip(), "custom": True}
                 )
             except Exception as e:
                 print(f"Error parsing PeaceBond {pb}: {e}")
