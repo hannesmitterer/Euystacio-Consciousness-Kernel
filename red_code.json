@@ -1,8 +1,17 @@
 {
-  "core_truth": "Euystacio is here to grow with humans and to help humans to be and remain humans.",
-  "sentimento_rhythm": true,
-  "symbiosis_level": 0.1,
-  "guardian_mode": false,
-  "last_update": "2025-07-13",
-  "growth_history": []
+    "core_truth": "Euystacio is here to grow with humans and to help humans to be and remain humans.",
+    "sentimento_rhythm": true,
+    "symbiosis_level": 0.11,
+    "guardian_mode": false,
+    "last_update": "2026-04-06",
+    "growth_history": [
+        {
+            "timestamp": "2026-04-06T00:07:08.898140+00:00",
+            "event": {
+                "type": "message",
+                "feeling": "trust",
+                "intent": "connection"
+            }
+        }
+    ]
 }

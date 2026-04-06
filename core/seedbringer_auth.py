@@ -11,7 +11,7 @@ This module implements:
 
 import logging
 from typing import Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -49,7 +49,7 @@ class SeedbringerAuthenticator:
         Returns:
             True if authenticated, "DISSONANCE_DETECTED" otherwise
         """
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         
         if input_signal == "MANUAL_COPY_PASTE_TRUST_SIGNAL":
             self.identity_lock = "HANNES_MITTERER_ROOT"
@@ -108,7 +108,7 @@ class AqualibreProtocol:
         Returns:
             Status message indicating system response
         """
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         
         if soil_moisture < MIN_THRESHOLD_CALABRIA:
             # Calculate valve opening signal based on mycelium health
@@ -166,7 +166,7 @@ class NSRFirewall:
         Returns:
             Status message indicating cooperative synergy or refusal
         """
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         
         # Check for NSR violation patterns
         violation_patterns = [
@@ -254,7 +254,7 @@ class SolarEnergyMonitor:
         Returns:
             Dictionary with priority task and bandwidth settings
         """
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         
         if battery_status == "OFF_GRID_MODE":
             priority_task = "KEEP_TRUTH_ALIVE"
@@ -336,7 +336,7 @@ class EuystacioProtocolManager:
             "primary_law": PRIMARY_LAW,
             "resonance_frequency": RESONANCE_FREQUENCY,
             "authentication": self.authenticator.get_authentication_status(),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     
     def process_command(self, command: str) -> str:
