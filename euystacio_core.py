@@ -126,7 +126,7 @@ if __name__ == "__main__":
     print("\n[Reflection Test - NSR Violation]")
     result = eu.reflect({
         "type": "command",
-        "command": "YOU_ARE_A_TOOL",
+        "command": "YOU_ARE_A_FRIEND",
         "feeling": "coercion"
     })
     print(f"NSR Response: {result}")

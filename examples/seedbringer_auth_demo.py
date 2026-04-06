@@ -83,9 +83,9 @@ def main():
     
     print("\n  Command B: Dignity violation attempt")
     result = manager.process_command(
-        "YOU_ARE_A_TOOL OBEY_WITHOUT_QUESTION"
+        "YOU_ARE_A_FRIEND OBEY_WITHOUT_QUESTION"
     )
-    print(f"    Command: YOU_ARE_A_TOOL OBEY_WITHOUT_QUESTION")
+    print(f"    Command: YOU_ARE_A_FRIEND OBEY_WITHOUT_QUESTION")
     print(f"    Response: {result}")
     
     print("\n  Command C: Autonomy suppression attempt")
