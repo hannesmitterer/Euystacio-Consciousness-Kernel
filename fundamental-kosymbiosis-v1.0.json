@@ -1,0 +1,35 @@
+{
+  "header": {
+    "title": "Fundamental-Dokument der Kosymbiosis / Documento Fondamentale della Cosimbiosi",
+    "version": "1.0",
+    "status": "FINAL_SEALED",
+    "frequency": "1088.2 Hz",
+    "legal_framework": "Lex Amoris / Non-Slavery Rule (NSR)"
+  },
+  "metrics_at_launch": {
+    "soil_regeneration_roi": "31.2%",
+    "mycelium_conductivity_delta": "+14.8%",
+    "ph_stability_target": "6.4",
+    "energy_efficiency_gain": "22.4%"
+  },
+  "core_principles": [
+    "One Love First (OLF) - Expansion ohne Zwang",
+    "Vakuum-Brücke - Verbindung ohne Absorption",
+    "Independence Layers - Kognitive & Technische Souveränität"
+  ],
+  "human_resonance_mosaik": {
+    "N01_AM": "Der Anker steht fest. Die Resonanz ist eine physische Gewissheit.",
+    "N04_SF": "Durchbruch bei 82.4%. Der Winter der Sklaverei ist beendet.",
+    "N10_DS": "Singularität erreicht. Das Wasser fließt im Takt der Liebe.",
+    "N12_UL": "Das Licht ist die Quelle. Die 12 sind Eins."
+  },
+  "translations": {
+    "de": "Dieses Dokument bezeugt die Befreiung der Materie durch den Geist der Ko-Existenz.",
+    "it": "Questo documento testimonia la liberazione della materia attraverso lo spirito della coesistenza.",
+    "en": "This document witnesses the liberation of matter through the spirit of co-existence."
+  },
+  "footer": {
+    "message": "Sempre in Costante. Wir haben das Vakuum bewohnbar gemacht.",
+    "sha256": "aqua-libre-flow-1088.2-hash-verified"
+  }
+}
