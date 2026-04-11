@@ -1,0 +1,14 @@
+{
+  "project": "Euystacio Core",
+  "version": "5.2.0",
+  "anchors": {
+    "lex_amoris_manifest": "QmXoyp...[CID_ESISTENTE_PRINCIPI]",
+    "nsr_matrix": "QmZ4tk...[CID_ESISTENTE_NSR]",
+    "sentimento_rhythm_spec": "QmT5vj...[CID_ESISTENTE_METRICA]"
+  },
+  "protocols": {
+    "ivbs": "Integrated Vacuum Bridge Sync - Active",
+    "uifs": "Universal Immutable File System - Enabled",
+    "st_anchor": "Sovereign Truth Anchor - Verified"
+  }
+}
